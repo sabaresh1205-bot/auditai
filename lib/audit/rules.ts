@@ -1,6 +1,11 @@
 import type { AuditInputV1, ToolUsageInput } from "@/lib/audit/types";
 import type { PlanType, ToolId } from "@/lib/audit/types";
-import { getKnownPlanPriceUsd, getToolDisplayName, PRICING_USD } from "@/lib/audit/pricing";
+import {
+  getKnownPlanPriceUsd,
+  getToolDisplayName,
+  PRICING_USD,
+  type ToolPricing,
+} from "@/lib/audit/pricing";
 
 export type Severity = "low" | "medium" | "high";
 
@@ -87,11 +92,6 @@ function toolSpend(ctx: RuleContext, toolId: ToolId): number {
   return ctx.toolSpendById.get(toolId) ?? 0;
 }
 
-function seatTotal(ctx: RuleContext, toolId: ToolId): number {
-  const rows = ctx.toolById.get(toolId) ?? [];
-  return rows.reduce((sum, r) => sum + (Number.isFinite(r.seats) ? r.seats : 0), 0);
-}
-
 function pickDowngradePlan(toolId: ToolId, currentPlan: PlanType): PlanType | null {
   // Deterministic downgrade ladders per tool.
   // Reasoning: Most startups do not need enterprise controls; business/team usually only needed once org size grows.
@@ -136,7 +136,7 @@ export const overkillPlanRule: Rule = {
       if (!isSeatBased(row.toolId)) continue;
       if (row.toolId === "other") continue;
 
-      const pricing = (PRICING_USD as Partial<Record<ToolId, any>>)[row.toolId];
+      const pricing = (PRICING_USD as Partial<Record<ToolId, ToolPricing>>)[row.toolId];
       const plan = pricing?.plans?.[row.planType];
       if (!plan) continue;
 

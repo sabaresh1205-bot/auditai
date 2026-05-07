@@ -14,9 +14,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AuditAI — Audit & optimize AI tool spend",
+  title: {
+    default: "AuditAI — Audit & optimize AI tool spend",
+    template: "%s | AuditAI",
+  },
   description:
     "AuditAI helps startups find waste in AI tool spend and get actionable, rule-based savings recommendations.",
+  metadataBase:
+    typeof process.env.NEXT_PUBLIC_BASE_URL === "string"
+      ? new URL(process.env.NEXT_PUBLIC_BASE_URL)
+      : undefined,
+  openGraph: {
+    title: "AuditAI — Audit & optimize AI tool spend",
+    description:
+      "AuditAI gives deterministic recommendations to cut AI tool waste for startups.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AuditAI — Audit & optimize AI tool spend",
+    description:
+      "Rule-based audits that find concrete savings in your AI stack.",
+  },
 };
 
 export default function RootLayout({

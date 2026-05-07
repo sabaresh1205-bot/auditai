@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuditReport } from "@/contexts/AuditReportContext";
 import { AuditSummaryCard } from "@/components/results/AuditSummaryCard";
 import { RecommendationCard } from "@/components/results/RecommendationCard";
@@ -10,13 +10,167 @@ import { ShareExportPanel } from "@/components/results/ShareExportPanel";
 import { EmptyStateCard } from "@/components/results/EmptyStateCard";
 import { ResultsSkeleton } from "@/components/results/ResultsSkeleton";
 import { generatePortfolioInsights } from "@/lib/report/insights";
+import { LeadCaptureForm } from "@/components/lead-capture/LeadCaptureForm";
+import {
+  buildPersistKey,
+  getPersistedIdByKey,
+  setPersistedIdByKey,
+} from "@/lib/report/persistence";
+import { AISummaryCard } from "@/components/results/AISummaryCard";
+import { fnv1a32 } from "@/lib/utils/hash";
 
 export default function ResultsPage() {
-  const { isHydrated, stored, clear } = useAuditReport();
+  const { isHydrated, stored, setStored, clear } = useAuditReport();
+  const [persistStatus, setPersistStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [persistMessage, setPersistMessage] = useState("");
+  const persistAttemptedForKeyRef = useRef<string | null>(null);
+
+  const [aiStatus, setAiStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [aiText, setAiText] = useState<string | null>(null);
+  const [aiSource, setAiSource] = useState<"ai" | "fallback" | null>(null);
+  const [aiErrorMessage, setAiErrorMessage] = useState<string | null>(null);
+  const aiAttemptedForKeyRef = useRef<string | null>(null);
+  const [aiRequestNonce, setAiRequestNonce] = useState(0);
 
   const insights = useMemo(() => {
     if (!stored) return [];
     return generatePortfolioInsights(stored.input, stored.report);
+  }, [stored, aiRequestNonce]);
+
+  useEffect(() => {
+    async function persistReportIfNeeded() {
+      if (!stored) return;
+
+      if (stored.persistedReportId) {
+        setPersistStatus("saved");
+        return;
+      }
+
+      const persistKey = buildPersistKey(stored);
+      const alreadyPersisted = getPersistedIdByKey(persistKey);
+      if (alreadyPersisted) {
+        setStored({ ...stored, persistedReportId: alreadyPersisted });
+        setPersistStatus("saved");
+        return;
+      }
+
+      // Prevent duplicate POSTs from rerenders / StrictMode double-effect.
+      if (persistAttemptedForKeyRef.current === persistKey) return;
+      persistAttemptedForKeyRef.current = persistKey;
+
+      setPersistStatus("saving");
+      setPersistMessage("");
+      try {
+        const res = await fetch("/api/reports", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ input: stored.input, report: stored.report }),
+        });
+        const data = (await res.json()) as {
+          id?: string;
+          error?: { message?: string } | string;
+        };
+        if (!res.ok || !data.id) {
+          const errMsg =
+            typeof data.error === "string"
+              ? data.error
+              : data.error?.message || "Failed to save report.";
+          throw new Error(errMsg);
+        }
+        setPersistedIdByKey(persistKey, data.id);
+        setStored({ ...stored, persistedReportId: data.id });
+        setPersistStatus("saved");
+      } catch (error) {
+        persistAttemptedForKeyRef.current = null;
+        setPersistStatus("error");
+        setPersistMessage(error instanceof Error ? error.message : "Failed to save report.");
+      }
+    }
+    void persistReportIfNeeded();
+  }, [stored, setStored]);
+
+  useEffect(() => {
+    async function ensureAiSummary() {
+      if (!stored) return;
+      if (typeof window === "undefined") return;
+
+      const persistKey = buildPersistKey(stored);
+      const shortKey = fnv1a32(persistKey);
+      const localKey = `auditai:aiSummary:${shortKey}`;
+
+      const cachedRaw = window.localStorage.getItem(localKey);
+      if (cachedRaw) {
+        try {
+          const cached = JSON.parse(cachedRaw) as { summary?: string; source?: "ai" | "fallback" };
+          if (cached.summary) {
+            setAiText(cached.summary);
+            setAiSource(cached.source ?? "fallback");
+            setAiStatus("success");
+            return;
+          }
+        } catch {
+          // ignore cache parse errors
+        }
+      }
+
+      if (aiAttemptedForKeyRef.current === localKey) return;
+      aiAttemptedForKeyRef.current = localKey;
+
+      setAiStatus("loading");
+      setAiErrorMessage(null);
+
+      // Payload is deterministic: derived from the stored audit report.
+      const payload = {
+        version: 1,
+        currency: stored.input.currency,
+        teamSize: stored.input.teamSize,
+        primaryUseCase: stored.input.primaryUseCase,
+        tools: stored.input.tools,
+      };
+
+      const report = {
+        summary: stored.report.summary,
+        recommendations: stored.report.recommendations,
+        monthlySavings: stored.report.monthlySavings,
+        annualSavings: stored.report.annualSavings,
+      };
+
+      try {
+        const res = await fetch("/api/summary", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            provider: "openai",
+            payload: { input: payload, report },
+          }),
+        });
+
+        const data = (await res.json()) as
+          | { ok: true; summary: string; source: "ai" | "fallback" }
+          | { ok: false; error: { message?: string } };
+
+        if (!res.ok || !("ok" in data) || !data.ok || !data.summary) {
+          const msg = !res.ok
+            ? data && "error" in data && data.error?.message
+              ? data.error.message
+              : "Failed to generate summary."
+            : "Failed to generate summary.";
+          throw new Error(msg);
+        }
+
+        setAiText(data.summary);
+        setAiSource(data.source);
+        setAiStatus("success");
+
+        window.localStorage.setItem(localKey, JSON.stringify({ summary: data.summary, source: data.source }));
+      } catch (err) {
+        setAiStatus("error");
+        setAiErrorMessage(err instanceof Error ? err.message : "Summary failed.");
+        aiAttemptedForKeyRef.current = null;
+      }
+    }
+
+    void ensureAiSummary();
   }, [stored]);
 
   if (!isHydrated) {
@@ -43,6 +197,10 @@ export default function ResultsPage() {
   const { report } = stored;
   const currency = report.summary.currency;
   const recommendations = report.recommendations;
+  const shareUrl =
+    stored.persistedReportId && typeof window !== "undefined"
+      ? `${window.location.origin}/report/${stored.persistedReportId}`
+      : null;
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 py-14">
@@ -59,6 +217,24 @@ export default function ResultsPage() {
             <span className="font-medium">{new Date(stored.generatedAtIso).toLocaleString()}</span>
             .
           </p>
+          {persistStatus === "saving" ? (
+            <p
+              role="status"
+              aria-live="polite"
+              className="mt-2 text-sm text-zinc-600 dark:text-zinc-300"
+            >
+              Saving shareable report...
+            </p>
+          ) : null}
+          {persistStatus === "error" ? (
+            <p
+              role="status"
+              aria-live="assertive"
+              className="mt-2 text-sm text-red-600 dark:text-red-300"
+            >
+              {persistMessage}
+            </p>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap gap-3">
@@ -83,6 +259,24 @@ export default function ResultsPage() {
           summary={report.summary}
           monthlySavings={report.monthlySavings}
           annualSavings={report.annualSavings}
+        />
+
+        <AISummaryCard
+          currency={report.summary.currency}
+          monthlySavings={report.monthlySavings}
+          annualSavings={report.annualSavings}
+          status={aiStatus}
+          summary={aiText}
+          source={aiSource}
+          errorMessage={aiErrorMessage ?? undefined}
+          onRetry={() => {
+            aiAttemptedForKeyRef.current = null;
+            setAiStatus("idle");
+            setAiText(null);
+            setAiSource(null);
+            setAiErrorMessage(null);
+            setAiRequestNonce((n) => n + 1);
+          }}
         />
 
         <div className="grid gap-6 lg:grid-cols-12">
@@ -126,7 +320,11 @@ export default function ResultsPage() {
               </div>
             </section>
 
-            <ShareExportPanel />
+            <ShareExportPanel shareUrl={shareUrl} />
+            <LeadCaptureForm
+              reportId={stored.persistedReportId ?? null}
+              defaultTeamSize={stored.input.teamSize}
+            />
           </aside>
         </div>
       </div>

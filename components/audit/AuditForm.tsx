@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
   AuditInputV1,
@@ -12,12 +12,9 @@ import type {
 } from "@/lib/audit/types";
 import { DEFAULT_AUDIT_INPUT } from "@/lib/audit/types";
 import { generateAuditReport } from "@/lib/audit/engine";
-import {
-  readLocalStorageJson,
-  removeLocalStorage,
-  writeLocalStorageJson,
-} from "@/lib/storage/localStorage";
+import { useLocalStorageJson } from "@/lib/storage/useLocalStorageJson";
 import { useAuditReport } from "@/contexts/AuditReportContext";
+import { formatMoneyDeterministic } from "@/lib/report/format";
 
 const STORAGE_KEY = "auditai:auditInput:v1";
 
@@ -52,7 +49,7 @@ const USE_CASE_OPTIONS: Array<{ id: PrimaryUseCase; label: string }> = [
   { id: "mixed", label: "Mixed" },
 ];
 
-const CURRENCY_OPTIONS: Array<{ id: CurrencyCode; label: string }> = [
+const CURRENCY_OPTIONS = [
   { id: "USD", label: "USD" },
   { id: "INR", label: "INR" },
   { id: "EUR", label: "EUR" },
@@ -60,7 +57,7 @@ const CURRENCY_OPTIONS: Array<{ id: CurrencyCode; label: string }> = [
   { id: "AUD", label: "AUD" },
   { id: "CAD", label: "CAD" },
   { id: "SGD", label: "SGD" },
-];
+] as const;
 
 type FieldErrors = Partial<{
   teamSize: string;
@@ -128,72 +125,40 @@ function validate(input: AuditInputV1): FieldErrors {
   return errors;
 }
 
-function formatCurrency(currency: CurrencyCode, amount: number): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch {
-    return `${currency} ${amount.toFixed(2)}`;
-  }
-}
-
 export function AuditForm() {
   const router = useRouter();
   const { setStored } = useAuditReport();
-  const [input, setInput] = useState<AuditInputV1>(DEFAULT_AUDIT_INPUT);
+  const { value: input, setValue: setInput, clearValue } = useLocalStorageJson<AuditInputV1>(
+    STORAGE_KEY,
+    DEFAULT_AUDIT_INPUT
+  );
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [didHydrate, setDidHydrate] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-
-  useEffect(() => {
-    const stored = readLocalStorageJson<AuditInputV1>(STORAGE_KEY);
-    if (stored.ok && stored.value?.version === 1) {
-      setInput(stored.value);
-    }
-    setDidHydrate(true);
-  }, []);
-
-  useEffect(() => {
-    if (!didHydrate) return;
-    writeLocalStorageJson(STORAGE_KEY, input);
-  }, [didHydrate, input]);
-
-  const formatMoney = (amount: number) => {
-    // Avoid hydration mismatches from locale-specific currency formatting.
-    // Server-rendered HTML may use a different locale than the browser.
-    return didHydrate
-      ? formatCurrency(input.currency, amount)
-      : `${input.currency} ${amount.toFixed(2)}`;
-  };
 
   const monthlyTotal = useMemo(() => {
     return input.tools.reduce((sum, t) => sum + (Number.isFinite(t.monthlySpend) ? t.monthlySpend : 0), 0);
   }, [input.tools]);
 
-  function updateTool(idx: number, patch: Partial<ToolUsageInput>) {
-    setInput((prev) => {
-      const nextTools = prev.tools.slice();
-      const current = nextTools[idx] ?? createEmptyTool();
-      const next: ToolUsageInput = { ...current, ...patch };
-      if (next.toolId !== "other") next.toolNameOverride = undefined;
-      nextTools[idx] = next;
-      return { ...prev, tools: nextTools };
-    });
+  function updateToolSafe(idx: number, patch: Partial<ToolUsageInput>) {
+    // For add/remove operations where index might not exist yet.
+    const nextTools = input.tools.slice();
+    const current = nextTools[idx] ?? createEmptyTool();
+    const next: ToolUsageInput = { ...current, ...patch };
+    if (next.toolId !== "other") next.toolNameOverride = undefined;
+    nextTools[idx] = next;
+    setInput({ ...input, tools: nextTools });
   }
 
   function removeTool(idx: number) {
-    setInput((prev) => ({ ...prev, tools: prev.tools.filter((_, i) => i !== idx) }));
+    setInput({ ...input, tools: input.tools.filter((_, i) => i !== idx) });
   }
 
   function addTool() {
-    setInput((prev) => ({ ...prev, tools: [...prev.tools, createEmptyTool()] }));
+    setInput({ ...input, tools: [...input.tools, createEmptyTool()] });
   }
 
   function reset() {
-    removeLocalStorage(STORAGE_KEY);
+    clearValue();
     setErrors({});
     setInput(DEFAULT_AUDIT_INPUT);
   }
@@ -227,12 +192,19 @@ export function AuditForm() {
           <label className="grid gap-2">
             <span className="text-sm font-medium">Team size</span>
             <input
+              type="number"
               inputMode="numeric"
+              min={1}
               className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
-              value={String(input.teamSize)}
+              value={input.teamSize <= 0 ? "" : String(input.teamSize)}
+              onFocus={(e) => e.currentTarget.select()}
               onChange={(e) => {
-                const n = clampInt(Number(e.target.value), 1, 100000);
-                setInput((prev) => ({ ...prev, teamSize: n }));
+                if (e.target.value === "") {
+                  setInput({ ...input, teamSize: 0 });
+                  return;
+                }
+                const n = clampInt(Number(e.target.value), 0, 100000);
+                setInput({ ...input, teamSize: n });
               }}
             />
             {errors.teamSize ? (
@@ -246,10 +218,10 @@ export function AuditForm() {
               className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
               value={input.primaryUseCase}
               onChange={(e) =>
-                setInput((prev) => ({
-                  ...prev,
+                setInput({
+                  ...input,
                   primaryUseCase: e.target.value as PrimaryUseCase,
-                }))
+                })
               }
             >
               {USE_CASE_OPTIONS.map((o) => (
@@ -266,10 +238,10 @@ export function AuditForm() {
               className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
               value={input.currency}
               onChange={(e) =>
-                setInput((prev) => ({
-                  ...prev,
+                setInput({
+                  ...input,
                   currency: e.target.value as CurrencyCode,
-                }))
+                })
               }
             >
               {CURRENCY_OPTIONS.map((o) => (
@@ -315,7 +287,9 @@ export function AuditForm() {
                     <select
                       className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
                       value={tool.toolId}
-                      onChange={(e) => updateTool(idx, { toolId: e.target.value as ToolId })}
+                      onChange={(e) =>
+                        updateToolSafe(idx, { toolId: e.target.value as ToolId })
+                      }
                     >
                       {TOOL_OPTIONS.map((o) => (
                         <option key={o.id} value={o.id}>
@@ -334,7 +308,9 @@ export function AuditForm() {
                       <input
                         className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
                         value={tool.toolNameOverride ?? ""}
-                        onChange={(e) => updateTool(idx, { toolNameOverride: e.target.value })}
+                        onChange={(e) =>
+                          updateToolSafe(idx, { toolNameOverride: e.target.value })
+                        }
                         placeholder="e.g., Midjourney"
                       />
                       {toolErrors?.toolNameOverride ? (
@@ -352,7 +328,9 @@ export function AuditForm() {
                     <select
                       className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
                       value={tool.planType}
-                      onChange={(e) => updateTool(idx, { planType: e.target.value as PlanType })}
+                      onChange={(e) =>
+                        updateToolSafe(idx, { planType: e.target.value as PlanType })
+                      }
                     >
                       {PLAN_OPTIONS.map((o) => (
                         <option key={o.id} value={o.id}>
@@ -371,7 +349,11 @@ export function AuditForm() {
                       inputMode="numeric"
                       className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
                       value={String(tool.seats)}
-                      onChange={(e) => updateTool(idx, { seats: clampInt(Number(e.target.value), 1, 100000) })}
+                      onChange={(e) =>
+                        updateToolSafe(idx, {
+                          seats: clampInt(Number(e.target.value), 1, 100000),
+                        })
+                      }
                     />
                     {toolErrors?.seats ? (
                       <span className="text-xs text-red-600 dark:text-red-400">{toolErrors.seats}</span>
@@ -385,7 +367,13 @@ export function AuditForm() {
                       className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
                       value={String(tool.monthlySpend)}
                       onChange={(e) =>
-                        updateTool(idx, { monthlySpend: clampMoney(Number(e.target.value), 0, 100000000) })
+                        updateToolSafe(idx, {
+                          monthlySpend: clampMoney(
+                            Number(e.target.value),
+                            0,
+                            100000000
+                          ),
+                        })
                       }
                     />
                     {toolErrors?.monthlySpend ? (
@@ -396,7 +384,7 @@ export function AuditForm() {
 
                 <div className="mt-4 flex items-center justify-between gap-3">
                   <div className="text-sm text-zinc-600 dark:text-zinc-300">
-                    {formatMoney(tool.monthlySpend)} / month
+                    {formatMoneyDeterministic(input.currency, tool.monthlySpend)} / month
                   </div>
                   <button
                     type="button"
@@ -418,7 +406,7 @@ export function AuditForm() {
           <div className="text-sm text-zinc-600 dark:text-zinc-300">
             Monthly total:{" "}
             <span className="font-semibold text-zinc-900 dark:text-zinc-50">
-              {formatMoney(monthlyTotal)}
+              {formatMoneyDeterministic(input.currency, monthlyTotal)}
             </span>
           </div>
           <div className="flex gap-3">

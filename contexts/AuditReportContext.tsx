@@ -3,13 +3,14 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { AuditInputV1 } from "@/lib/audit/types";
 import type { AuditReport } from "@/lib/audit/engine";
-import { readLocalStorageJson, writeLocalStorageJson } from "@/lib/storage/localStorage";
+import { useLocalStorageJson } from "@/lib/storage/useLocalStorageJson";
 
 export type StoredAuditV1 = {
   version: 1;
   input: AuditInputV1;
   report: AuditReport;
   generatedAtIso: string;
+  persistedReportId?: string;
 };
 
 const STORAGE_KEY = "auditai:auditReport:v1";
@@ -24,12 +25,11 @@ type AuditReportState = {
 const Ctx = createContext<AuditReportState | null>(null);
 
 export function AuditReportProvider({ children }: { children: React.ReactNode }) {
+  const { value: stored, setValue: setStoredState, clearValue } =
+    useLocalStorageJson<StoredAuditV1 | null>(STORAGE_KEY, null);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [stored, setStoredState] = useState<StoredAuditV1 | null>(null);
 
   useEffect(() => {
-    const res = readLocalStorageJson<StoredAuditV1>(STORAGE_KEY);
-    if (res.ok && res.value?.version === 1) setStoredState(res.value);
     setIsHydrated(true);
   }, []);
 
@@ -39,14 +39,12 @@ export function AuditReportProvider({ children }: { children: React.ReactNode })
       stored,
       setStored: (next) => {
         setStoredState(next);
-        writeLocalStorageJson(STORAGE_KEY, next);
       },
       clear: () => {
-        setStoredState(null);
-        writeLocalStorageJson(STORAGE_KEY, null);
+        clearValue();
       },
     };
-  }, [isHydrated, stored]);
+  }, [isHydrated, stored, setStoredState, clearValue]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
