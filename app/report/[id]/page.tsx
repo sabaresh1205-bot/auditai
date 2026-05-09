@@ -6,6 +6,7 @@ import { buildPublicReportPayload } from "@/lib/report/public";
 import { AuditSummaryCard } from "@/components/results/AuditSummaryCard";
 import { RecommendationCard } from "@/components/results/RecommendationCard";
 import { SavingsBreakdown } from "@/components/results/SavingsBreakdown";
+import { BenchmarkCard } from "@/components/results/BenchmarkCard";
 import { formatMoneyDeterministic } from "@/lib/report/format";
 import { getPublicReportPageUrl } from "@/lib/seo/publicSiteUrl";
 
@@ -118,6 +119,14 @@ export default async function PublicReportPage({
           </div>
         </div>
       </section>
+
+      <div className="mt-6">
+        <BenchmarkCard
+          totalMonthlySpend={report.summary.totalMonthlySpend}
+          teamSize={report.summary.teamSize}
+          currency={report.summary.currency}
+        />
+      </div>
 
       <div className="mt-6 space-y-6">
         <AuditSummaryCard

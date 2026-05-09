@@ -80,3 +80,7 @@ Avoid claiming “we access your invoices”; the product is **self-reported spe
 ## Why this beats generic “AI cost calculators”
 
 Most calculators output a **single number** with opaque assumptions. AuditAI outputs **actions** (downgrade, remove redundant assistant, seat correction) tied to explicit rules—closer to how an operator actually fixes the problem.
+
+Benchmark mode adds an extra deterministic context signal (spend-per-developer vs static internal team-size ranges) to help users self-calibrate without claiming live market intelligence.
+
+An iframe-first `/embed` route provides a low-friction distribution surface for blogs and partner content while preserving deterministic, transparent logic.

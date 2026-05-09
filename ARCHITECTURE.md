@@ -73,6 +73,7 @@ flowchart TB
 - **Properties:** Pure functions of input; same input → same recommendations and totals.
 - **Selection:** Rules emit candidates; dedupe; then **one recommendation per `toolId`** via fixed type precedence and stable tie-breaks (savings, then action string).
 - **Totals:** `monthlySavings` sums **positive** `estimatedSavings` from the selected set only; `annualSavings = round(monthlySavings × 12)`.
+- **Benchmark mode (deterministic):** `lib/report/benchmarks.ts` compares current spend-per-developer to a static internal reference table by team-size bucket. It is a lightweight guidance layer and does not affect recommendations or savings totals.
 
 ---
 
@@ -89,6 +90,7 @@ flowchart TB
 
 - **Edge-friendly static/compute split:** Core audit runs in the browser; server routes handle persistence, email, and optional LLM proxy. This keeps latency low for “Generate audit” and bounds server CPU cost.
 - **Clear boundaries:** `route.ts` handlers validate with Zod, return structured errors, and never re-implement business rules that belong in `lib/audit/*`.
+- **Embed mode:** `/embed` is intentionally client-local and deterministic (`generateAuditReport` only), with no Supabase persistence, no AI summary request, and no lead/email flow.
 
 ---
 

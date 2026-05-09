@@ -106,7 +106,19 @@ body {
   .print-document .rounded-2xl,
   .print-document article {
     break-inside: avoid;
+    page-break-inside: avoid;
     box-shadow: none !important;
+  }
+
+  .print-document section,
+  .print-document aside {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  .print-document .space-y-4 > * + *,
+  .print-document .space-y-6 > * + * {
+    margin-top: 0.9rem !important;
   }
 
   .print-document a[href] {

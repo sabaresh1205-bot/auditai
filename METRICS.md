@@ -27,6 +27,12 @@ These feed the north star and surface funnel breakage early:
 3. **Qualified lead rate (from persisted reports)**  
    - **Definition:** `POST /api/leads` **201** ÷ persisted reports in the same cohort window.  
    - **Why:** Measures whether the **artifact + copy** compels a low-friction opt-in.
+4. **Benchmark mode distribution (diagnostic)**  
+   - **Definition:** share of reports in `BELOW_AVERAGE` / `AROUND_AVERAGE` / `ABOVE_AVERAGE` from deterministic benchmark buckets.
+   - **Why:** helps product messaging and consultation targeting; these are static internal references, not live market signals.
+5. **Embed completion rate (bonus)**  
+   - **Definition:** embed sessions that click “Run audit” and render compact deterministic summary.
+   - **Why:** measures partner/blog embed usefulness without conflating with full-app persistence/lead funnels.
 
 ---
 

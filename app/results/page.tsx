@@ -23,6 +23,7 @@ import {
   CREDEX_CTA_MIN_MONTHLY_SAVINGS,
 } from "@/lib/config/credexConsultation";
 import { formatMoneyDeterministic } from "@/lib/report/format";
+import { BenchmarkCard } from "@/components/results/BenchmarkCard";
 
 export default function ResultsPage() {
   const { isHydrated, stored, setStored, clear } = useAuditReport();
@@ -290,6 +291,14 @@ export default function ResultsPage() {
           </div>
         </div>
       </section>
+
+      <div className="mt-6">
+        <BenchmarkCard
+          totalMonthlySpend={report.summary.totalMonthlySpend}
+          teamSize={report.summary.teamSize}
+          currency={report.summary.currency}
+        />
+      </div>
 
       {report.monthlySavings >= CREDEX_CTA_MIN_MONTHLY_SAVINGS ? (
         <aside className="no-print mt-6 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-sm dark:border-white/10 dark:bg-white/5 sm:p-6">

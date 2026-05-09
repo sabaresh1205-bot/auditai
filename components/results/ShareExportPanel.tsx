@@ -44,9 +44,10 @@ export function ShareExportPanel({ shareUrl }: { shareUrl: string | null }) {
         <button
           type="button"
           onClick={exportPdf}
+          aria-label="Export audit report as PDF"
           className="inline-flex h-11 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
         >
-          Save as PDF
+          Export PDF
         </button>
         <button
           type="button"

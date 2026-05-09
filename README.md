@@ -52,6 +52,9 @@ Add your real screenshots into `screenshots/` when ready. Expected placeholders:
   - numeric monthly and annual savings totals
   - per-tool recommendations with confidence, severity, and reasons
 - Deterministic tie-breaking and de-duping to avoid “random” outputs
+- Benchmark mode card on results/public report:
+  - compares spend-per-developer to static internal reference ranges by team size
+  - deterministic and transparent (not live market telemetry)
 
 ### Executive summary (LLM optional)
 
@@ -67,6 +70,12 @@ Add your real screenshots into `screenshots/` when ready. Expected placeholders:
 - Deterministic report is persisted to Supabase and rendered at:
   - `**/report/[id]**`
 - Public rendering is filtered by `is_public = true` and a public payload builder derives presentation insights.
+
+### Embeddable widget (bonus)
+
+- Route: `**/embed**`
+- Lightweight iframe-first experience that runs the deterministic engine locally for compact outputs.
+- No persistence, no lead capture, and no AI-summary call inside embed mode (intentionally scoped).
 
 ### Lead capture (post-share)
 
