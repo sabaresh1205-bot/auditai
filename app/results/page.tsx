@@ -6,6 +6,7 @@ import { useAuditReport } from "@/contexts/AuditReportContext";
 import { AuditSummaryCard } from "@/components/results/AuditSummaryCard";
 import { RecommendationCard } from "@/components/results/RecommendationCard";
 import { SavingsBreakdown } from "@/components/results/SavingsBreakdown";
+import { SavingsByToolChart } from "@/components/results/SavingsByToolChart";
 import { ShareExportPanel } from "@/components/results/ShareExportPanel";
 import { EmptyStateCard } from "@/components/results/EmptyStateCard";
 import { ResultsSkeleton } from "@/components/results/ResultsSkeleton";
@@ -380,6 +381,7 @@ export default function ResultsPage() {
 
           <aside className="lg:col-span-4 space-y-6">
             <SavingsBreakdown currency={currency} recommendations={recommendations} />
+            <SavingsByToolChart currency={currency} recommendations={recommendations} />
 
             <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
               <h2 className="text-lg font-semibold tracking-tight">Portfolio insights</h2>
