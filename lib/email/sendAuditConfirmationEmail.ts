@@ -18,39 +18,17 @@ function resolveFromEmail(): string {
   return DEFAULT_FROM;
 }
 
-function buildReportUrl(reportId: string | undefined): string | null {
-  if (reportId === undefined || reportId === null) return null;
-  const id = String(reportId).trim();
-  if (!id) return null;
-
-  const fromEnv = process.env.NEXT_PUBLIC_BASE_URL?.trim();
-  const vercel = process.env.VERCEL_URL?.trim();
-  const baseRaw =
-    (fromEnv && fromEnv.replace(/\/$/, "")) ||
-    (vercel ? `https://${vercel.replace(/^https?:\/\//, "")}` : "");
-  if (!baseRaw) return null;
-
-  return `${baseRaw}/report/${encodeURIComponent(id)}`;
-}
-
-function buildPlainTextBody(reportUrl: string | null): string {
-  const lines: string[] = [
-    "Thank you for using AuditAI.",
+function buildPlainTextBody(): string {
+  return [
+    "Thanks for using AuditAI.",
     "",
-    "Your audit has been generated. AuditAI evaluated your inputs and flagged potential optimization opportunities in your AI tool spend.",
+    "Your AI spend audit has been generated successfully.",
     "",
-    "Teams with higher estimated savings may receive a short follow-up from us with clarification or practical next steps. You are never obligated to respond.",
+    "We identified potential optimization opportunities based on your current tooling stack. If your projected savings are significant, Credex may reach out with additional recommendations.",
     "",
-  ];
-
-  if (reportUrl) {
-    lines.push("View your shareable report:");
-    lines.push(reportUrl);
-    lines.push("");
-  }
-
-  lines.push("— AuditAI");
-  return lines.join("\n");
+    "Thanks,",
+    "AuditAI",
+  ].join("\n");
 }
 
 /**
@@ -73,12 +51,11 @@ export async function sendAuditConfirmationEmail(
       return { ok: false, provider: "skipped", reason: "missing_api_key" };
     }
 
-    const reportUrl = buildReportUrl(input.reportId);
     const { data, error } = await resend.emails.send({
       from: resolveFromEmail(),
       to: rawTo,
       subject: SUBJECT,
-      text: buildPlainTextBody(reportUrl),
+      text: buildPlainTextBody(),
     });
 
     if (error) {
