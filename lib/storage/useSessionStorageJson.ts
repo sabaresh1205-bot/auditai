@@ -3,28 +3,32 @@
 import { useCallback, useRef, useSyncExternalStore } from "react";
 
 function isBrowser(): boolean {
-  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+  return typeof window !== "undefined" && typeof window.sessionStorage !== "undefined";
 }
 
 function write(key: string, value: unknown): void {
   if (!isBrowser()) return;
-  window.localStorage.setItem(key, JSON.stringify(value));
+  window.sessionStorage.setItem(key, JSON.stringify(value));
   window.dispatchEvent(new StorageEvent("storage", { key }));
 }
 
 function remove(key: string): void {
   if (!isBrowser()) return;
-  window.localStorage.removeItem(key);
+  window.sessionStorage.removeItem(key);
   window.dispatchEvent(new StorageEvent("storage", { key }));
 }
 
-export function useLocalStorageJson<T>(key: string, defaultValue: T) {
+/**
+ * Session-scoped JSON storage: survives refresh in the same tab, clears when the tab/window is closed.
+ * Uses the same hydration-safe pattern as `useLocalStorageJson`.
+ */
+export function useSessionStorageJson<T>(key: string, defaultValue: T) {
   const cacheRef = useRef<{ raw: string | null; parsed: T } | null>(null);
 
   const readValue = useCallback((): T => {
     if (!isBrowser()) return defaultValue;
 
-    const raw = window.localStorage.getItem(key);
+    const raw = window.sessionStorage.getItem(key);
     if (raw == null) {
       cacheRef.current = null;
       return defaultValue;
@@ -74,4 +78,3 @@ export function useLocalStorageJson<T>(key: string, defaultValue: T) {
 
   return { value, setValue, clearValue };
 }
-

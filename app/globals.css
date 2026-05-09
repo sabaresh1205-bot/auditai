@@ -24,3 +24,103 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* --- Print / PDF export (Save as PDF) --- */
+.print-only {
+  display: none;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  @page {
+    margin: 14mm 12mm;
+  }
+
+  html {
+    background: #fff !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #18181b !important;
+  }
+
+  .print-document {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 0 !important;
+    flex: none !important;
+  }
+
+  .print-document h1 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .print-document h2 {
+    font-size: 1.125rem;
+    line-height: 1.3;
+  }
+
+  .print-document p,
+  .print-document li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Same on-screen order (audit → AI → grid); swap to audit → grid → AI for PDF */
+  .print-report-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .print-report-body > .print-o-audit {
+    order: 1;
+  }
+
+  .print-report-body > .print-o-grid {
+    order: 2;
+  }
+
+  .print-report-body > .print-o-ai {
+    order: 3;
+  }
+
+  .print-document .rounded-3xl,
+  .print-document .rounded-2xl,
+  .print-document article {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  .print-document a[href] {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* Flatten multi-column report grids to a single readable column */
+  .print-document .print-flatten-grid {
+    display: block !important;
+  }
+
+  .print-document .print-flatten-grid > * {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}

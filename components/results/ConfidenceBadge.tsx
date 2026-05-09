@@ -7,12 +7,16 @@ const STYLES: Record<Confidence, string> = {
   medium: "bg-zinc-100 text-zinc-900 ring-1 ring-inset ring-zinc-200 dark:bg-white/10 dark:text-zinc-100 dark:ring-white/10",
 };
 
+function capitalizeWord(s: Confidence): string {
+  return `${s.slice(0, 1).toUpperCase()}${s.slice(1)}`;
+}
+
 export function ConfidenceBadge({ confidence }: { confidence: Confidence }) {
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${STYLES[confidence]}`}
     >
-      Confidence: {confidence}
+      {capitalizeWord(confidence)} confidence
     </span>
   );
 }

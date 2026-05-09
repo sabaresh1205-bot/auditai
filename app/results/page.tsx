@@ -18,6 +18,11 @@ import {
 } from "@/lib/report/persistence";
 import { AISummaryCard } from "@/components/results/AISummaryCard";
 import { fnv1a32 } from "@/lib/utils/hash";
+import {
+  CREDEX_CONSULTATION_URL,
+  CREDEX_CTA_MIN_MONTHLY_SAVINGS,
+} from "@/lib/config/credexConsultation";
+import { formatMoneyDeterministic } from "@/lib/report/format";
 
 export default function ResultsPage() {
   const { isHydrated, stored, setStored, clear } = useAuditReport();
@@ -35,7 +40,7 @@ export default function ResultsPage() {
   const insights = useMemo(() => {
     if (!stored) return [];
     return generatePortfolioInsights(stored.input, stored.report);
-  }, [stored, aiRequestNonce]);
+  }, [stored]);
 
   useEffect(() => {
     async function persistReportIfNeeded() {
@@ -171,11 +176,11 @@ export default function ResultsPage() {
     }
 
     void ensureAiSummary();
-  }, [stored]);
+  }, [stored, aiRequestNonce]);
 
   if (!isHydrated) {
     return (
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 py-14">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-5 py-10 sm:px-6 sm:py-12">
         <ResultsSkeleton />
       </main>
     );
@@ -183,12 +188,12 @@ export default function ResultsPage() {
 
   if (!stored) {
     return (
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-14">
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-5 py-10 sm:px-6 sm:py-12">
         <EmptyStateCard
-          title="No audit report found"
-          description="Generate an audit first to see recommendations and savings."
+          title="No report yet"
+          description="Run a free audit to see deterministic recommendations and estimated savings."
           ctaHref="/audit"
-          ctaLabel="Go to audit"
+          ctaLabel="Run free audit"
         />
       </main>
     );
@@ -197,98 +202,159 @@ export default function ResultsPage() {
   const { report } = stored;
   const currency = report.summary.currency;
   const recommendations = report.recommendations;
+  const allRecommendationsNoChange =
+    recommendations.length > 0 &&
+    recommendations.every((r) => r.type === "NO_CHANGE");
+  const isLowSavings = report.monthlySavings < 100 || allRecommendationsNoChange;
   const shareUrl =
     stored.persistedReportId && typeof window !== "undefined"
       ? `${window.location.origin}/report/${stored.persistedReportId}`
       : null;
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 py-14">
+    <main className="print-document mx-auto flex w-full max-w-6xl flex-1 flex-col px-5 py-10 sm:px-6 sm:py-12">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
-            Audit results
+            Your savings report
           </p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-            Savings and recommendations
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
+            Savings & recommendations
           </h1>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
-            Deterministic, rule-based audit. Generated at{" "}
+            Deterministic audit · Generated{" "}
             <span className="font-medium">{new Date(stored.generatedAtIso).toLocaleString()}</span>
-            .
           </p>
+          {stored.persistedReportId ? (
+            <p className="print-only mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+              Report ID: {stored.persistedReportId}
+            </p>
+          ) : null}
           {persistStatus === "saving" ? (
             <p
               role="status"
               aria-live="polite"
-              className="mt-2 text-sm text-zinc-600 dark:text-zinc-300"
+              className="no-print mt-2 text-sm text-zinc-600 dark:text-zinc-300"
             >
-              Saving shareable report...
+              Saving shareable link…
             </p>
           ) : null}
           {persistStatus === "error" ? (
             <p
               role="status"
               aria-live="assertive"
-              className="mt-2 text-sm text-red-600 dark:text-red-300"
+              className="no-print mt-2 text-sm text-red-600 dark:text-red-300"
             >
               {persistMessage}
             </p>
           ) : null}
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="no-print flex flex-wrap gap-3">
           <Link
             href="/audit"
-            className="inline-flex h-10 items-center justify-center rounded-full border border-zinc-300 px-5 text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:border-white/15 dark:text-zinc-50 dark:hover:bg-white/5"
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-300 px-5 text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:border-white/15 dark:text-zinc-50 dark:hover:bg-white/5"
           >
-            Edit inputs
+            Edit audit
           </Link>
           <button
             type="button"
             onClick={clear}
-            className="inline-flex h-10 items-center justify-center rounded-full bg-zinc-900 px-5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
             Clear report
           </button>
         </div>
       </div>
 
-      <div className="mt-8 space-y-6">
-        <AuditSummaryCard
-          summary={report.summary}
-          monthlySavings={report.monthlySavings}
-          annualSavings={report.annualSavings}
-        />
+      <section className="mt-8 rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm dark:border-emerald-500/30 dark:bg-white/5 sm:p-8">
+        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Potential savings</p>
+        <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Monthly savings</p>
+            <p className="mt-1 text-3xl font-semibold tracking-tight text-emerald-700 dark:text-emerald-300">
+              {report.summary.currency} {report.monthlySavings.toFixed(2)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Annual savings</p>
+            <p className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              {report.summary.currency} {report.annualSavings.toFixed(2)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Status</p>
+            <p className="mt-1 text-base font-medium text-zinc-800 dark:text-zinc-200">
+              {report.monthlySavings > 0 ? "Savings identified" : "Spend looks aligned"}
+            </p>
+          </div>
+        </div>
+      </section>
 
-        <AISummaryCard
-          currency={report.summary.currency}
-          monthlySavings={report.monthlySavings}
-          annualSavings={report.annualSavings}
-          status={aiStatus}
-          summary={aiText}
-          source={aiSource}
-          errorMessage={aiErrorMessage ?? undefined}
-          onRetry={() => {
-            aiAttemptedForKeyRef.current = null;
-            setAiStatus("idle");
-            setAiText(null);
-            setAiSource(null);
-            setAiErrorMessage(null);
-            setAiRequestNonce((n) => n + 1);
-          }}
-        />
+      {report.monthlySavings >= CREDEX_CTA_MIN_MONTHLY_SAVINGS ? (
+        <aside className="no-print mt-6 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-sm dark:border-white/10 dark:bg-white/5 sm:p-6">
+          <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+            High-savings organizations may benefit from a deeper tooling and credit optimization review.
+          </p>
+          <a
+            href={CREDEX_CONSULTATION_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-zinc-900 px-5 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          >
+            Book a Credex Consultation
+          </a>
+          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+            Opens scheduling in a new tab · Based on estimated{" "}
+            {formatMoneyDeterministic(currency, report.monthlySavings)} / month
+          </p>
+        </aside>
+      ) : null}
 
-        <div className="grid gap-6 lg:grid-cols-12">
+      <div className="print-report-body mt-6 flex flex-col gap-6">
+        <div className="print-o-audit">
+          <AuditSummaryCard
+            summary={report.summary}
+            monthlySavings={report.monthlySavings}
+            annualSavings={report.annualSavings}
+          />
+        </div>
+
+        <div className="print-o-ai">
+          <AISummaryCard
+            currency={report.summary.currency}
+            monthlySavings={report.monthlySavings}
+            annualSavings={report.annualSavings}
+            status={aiStatus}
+            summary={aiText}
+            source={aiSource}
+            errorMessage={aiErrorMessage ?? undefined}
+            onRetry={() => {
+              aiAttemptedForKeyRef.current = null;
+              setAiStatus("idle");
+              setAiText(null);
+              setAiSource(null);
+              setAiErrorMessage(null);
+              setAiRequestNonce((n) => n + 1);
+            }}
+          />
+        </div>
+
+        <div className="print-o-grid print-flatten-grid grid gap-6 lg:grid-cols-12">
           <section className="lg:col-span-8 space-y-4">
-            <h2 className="text-lg font-semibold tracking-tight">Recommendations</h2>
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+              <h2 className="text-lg font-semibold tracking-tight">Deterministic recommendations</h2>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+                Ranked by estimated monthly impact. Amounts below come from deterministic rules—not from the optional AI summary.
+              </p>
+            </div>
 
             {recommendations.length === 0 ? (
               <EmptyStateCard
                 title="No recommendations"
-                description="We couldn’t generate any recommendations from the current inputs."
+                description="We didn’t surface recommendations from these inputs—try adjusting tools, seats, or spend."
                 ctaHref="/audit"
-                ctaLabel="Update audit inputs"
+                ctaLabel="Edit inputs"
               />
             ) : (
               <div className="space-y-4">
@@ -321,9 +387,22 @@ export default function ResultsPage() {
             </section>
 
             <ShareExportPanel shareUrl={shareUrl} />
+            {isLowSavings ? (
+              <div className="no-print rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 sm:p-6">
+                <h3 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+                  Your AI tooling spend already looks well optimized.
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                  We didn’t find major deterministic savings opportunities based on your current stack.
+                  Leave your email and we’ll notify you if new pricing changes or optimization
+                  opportunities apply in the future.
+                </p>
+              </div>
+            ) : null}
             <LeadCaptureForm
               reportId={stored.persistedReportId ?? null}
               defaultTeamSize={stored.input.teamSize}
+              optimizedStack={isLowSavings}
             />
           </aside>
         </div>

@@ -1,9 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useSyncExternalStore } from "react";
 import type { AuditInputV1 } from "@/lib/audit/types";
 import type { AuditReport } from "@/lib/audit/engine";
-import { useLocalStorageJson } from "@/lib/storage/useLocalStorageJson";
+import { useSessionStorageJson } from "@/lib/storage/useSessionStorageJson";
 
 export type StoredAuditV1 = {
   version: 1;
@@ -26,12 +26,12 @@ const Ctx = createContext<AuditReportState | null>(null);
 
 export function AuditReportProvider({ children }: { children: React.ReactNode }) {
   const { value: stored, setValue: setStoredState, clearValue } =
-    useLocalStorageJson<StoredAuditV1 | null>(STORAGE_KEY, null);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+    useSessionStorageJson<StoredAuditV1 | null>(STORAGE_KEY, null);
+  const isHydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   const value = useMemo<AuditReportState>(() => {
     return {

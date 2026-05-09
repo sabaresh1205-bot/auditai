@@ -1,118 +1,82 @@
 # Go-to-Market (GTM)
 
-This GTM plan is designed for the current MVP:
-- rule-based deterministic audit engine
-- optional AI executive summary layer
-- shareable public report links
-- lead capture via email on the results page
-- no login required
+AuditAI is a **no-login, deterministic AI spend audit** with optional narrative summary, shareable `/report/[id]` links, and email capture on `/results`. This GTM plan targets **operators who already feel billing pain**—not hobbyists browsing for “AI tools.”
 
 ---
 
-## ICP (Ideal Customer Profile)
+## Extremely specific ICP
 
-Primary ICP:
-- Early-stage startups (seed to Series A)
-- 5–50 people, where tooling decisions are handled by founders, engineering managers, or finance-adjacent operators
-- Teams that use multiple AI tools (coding assistants + general LLMs + occasional API usage)
+**Primary (first 500 conversations):**
 
-Common signals:
-- multiple overlapping subscriptions (e.g., Cursor + Copilot + ChatGPT/Claude/Gemini)
-- vague or inconsistent spend tracking for AI usage
-- “we feel we overpay” rather than a precise billing report
+- **Seed–Series A B2B SaaS** in the US/Canada/UK, **15–80 employees**, building with AI daily.
+- **Buyer / champion:** Founder–CTO, Head of Engineering, or a **finance-forward ops person** asked to “get AI spend under control.”
+- **Stack signal:** At least **two** of: Cursor or Copilot, **and** ChatGPT Team/Claude Team/Gemini workspace, **and/or** non-trivial OpenAI or Anthropic API bills.
+- **Pain signal:** Expenses sit across **corporate card + engineering invoices**; nobody owns a single “AI budget line.”
 
-Secondary ICP:
-- Small consultancies or product studios that manage AI subscriptions across client projects.
+**Secondary:**
 
----
+- **AI-native agencies / dev shops** (10–40 people) billing tools to clients informally—high overlap, high embarrassment when redundancy is obvious.
 
-## Positioning
-
-AuditAI positions as:
-- **Deterministic** “spend audit” for AI tooling (no login, quick results)
-- **Actionable** recommendations with numeric savings estimates
-- **Shareable** reports so teams can align internally (founder ↔ engineering ↔ finance)
-
-Key differentiator versus generic “LLM cost calculators”:
-- AuditAI doesn’t just estimate; it uses explicit rules to propose concrete actions (downgrades, consolidation, seat optimization, and a credit/discount opportunity when total spend is high).
+**Non-target for now:** enterprises with centralized IT procurement (long cycles) unless inbound.
 
 ---
 
-## Acquisition Strategy
+## Unfair distribution advantage
 
-### 1) Viral “internal memo” via shareable links
-After generating an audit, users can copy a share link (`/report/[id]`).
-Sharing those links inside a company is a low-friction growth channel:
-- a founder can send it to finance
-- an engineer can send it to leadership
-
-### 2) Content that targets “AI spend uncertainty”
-Create lightweight guides and examples that speak to real questions:
-- “How to spot redundant AI subscriptions”
-- “When should you downgrade Cursor/Copilot?”
-- “What does ‘cost per seat’ mean for AI tools?”
-
-Each piece should include a “Run a free audit” link to `/audit`.
-
-### 3) Community distribution
-Post practical audit outcomes (sanitized) to:
-- startup engineering communities
-- founder/operator communities
-
-Avoid “promotional screenshots”; focus on the concrete recommendations produced.
-
-### 4) Partnerships (later)
-Potential integrations with billing dashboards or startup ops tooling can add users, but this is not required for the MVP.
+1. **Shareable artifact:** The public report is a **forwardable internal memo**—the champion does not need to explain the methodology; the URL does.
+2. **Deterministic repeatability:** Two engineers running the same inputs get the same numbers—reduces “black box” objections in Slack debates.
+3. **Fast time-to-value:** Sub-10-minute path from stack entry to share link beats procurement-heavy “spend management” demos.
 
 ---
 
-## First 100 Users Plan
+## Acquisition channels (realistic, ordered)
 
-Assume 100 users comes from a mix of direct outreach and organic sharing.
+| Channel | Tactic | Why it fits |
+| --- | --- | --- |
+| **Founder / operator communities** | Post *sanitized before/after savings* + link pattern (not screenshots of private data) | Trust + specificity beat ads. |
+| **Engineering Slack groups** | “We duplicated Cursor+ChatGPT—here’s what a rule-based audit claims” | Engineers share tools; controversy drives clicks. |
+| **LinkedIn** | Short posts: **one rule** (e.g., redundancy) + CTA to free audit | Algorithm rewards concrete numbers. |
+| **Cold outbound (light)** | 40 emails/week to CTOs at companies hiring “AI engineer” roles | Hiring signal ⇒ AI tooling sprawl. |
+| **SEO (later)** | Long-tail: “Cursor vs Copilot cost,” “multiple ChatGPT accounts” | Compounds after first proofs. |
 
-### Week 1 (seed users)
-- Identify 30–50 startups where tooling spend is likely complex.
-- Target outreach:
-  - engineering managers
-  - founders responsible for tooling budget
-  - finance operators at small companies
-- Offer “try the audit and share feedback” rather than requesting immediate sign-ups (there is no signup in MVP).
-
-### Week 2–3 (content + sharing loop)
-- Publish 3–5 pieces of content with deterministic examples.
-- Each example should lead to a pre-filled mental model:
-  - “If your team is small, overkill plans often appear.”
-  - “If you pay for multiple general assistants, consolidation is usually the largest savings.”
-
-### Week 4 (iterate based on what users share)
-- Track which report sections users reference when sharing internally:
-  - top recommendation list
-  - savings breakdown
-  - portfolio insights
-- Use that to shape subsequent content topics.
+**Communities to seed first (examples):** Indie Hackers (founder threads), relevant **Slack workspaces** for YC-backed batches, **r/SaaS** and **r/startups** (value posts, not spam), **Women in SaaS / Ops** communities where budget owners congregate, **local startup meetups** with demo table.
 
 ---
 
-## Why Startups Would Use AuditAI
+## 30-day execution plan (concrete)
 
-Startups use AuditAI because it turns a hard-to-trust question (“Are we overpaying for AI tools?”) into:
-- a deterministic list of actions
-- a prioritized narrative
-- a shareable report they can take to decision-makers
+**Days 1–7 — Proof assets**
 
-AuditAI’s “deterministic first” approach helps avoid the most common objection to LLM-only recommendations: trust in the savings math.
+- Run **20 live audits** with friendly teams; capture **5 anonymized stories** (inputs abstracted, savings rounded).
+- Publish **one** canonical post: “How we calculate redundancy savings (deterministic rules, no LLM math).”
+
+**Days 8–14 — Distribution sprints**
+
+- **3 community posts** + **2 LinkedIn posts**, each with one specific rule explanation.
+- **30 targeted outbounds** to CTOs at companies with public “AI” job postings.
+
+**Days 15–21 — Share loop**
+
+- Ask every user: “Who else needs this URL?” — measure **forwards per report**.
+- Add **one** case study page (static) from the best anonymized audit.
+
+**Days 22–30 — Double down**
+
+- Re-run the **best-performing channel only** (community vs LinkedIn vs outbound).
+- Cut the worst channel without guilt.
+
+**Traction assumptions (honest):** **300–800** audit starts, **40–120** persisted public reports, **15–40** emails captured in 30 days if distribution is consistent—not if the product sits behind a single launch post.
 
 ---
 
-## Organic Growth Opportunities
+## Positioning (one line)
 
-1. **Internal forwarding as a distribution mechanism**
-   - Public report pages are naturally shareable.
+**“A deterministic AI stack audit you can forward to finance—no login.”**
 
-2. **Deterministic repeatability**
-   - Since the core recommendations are rule-based, the same inputs should produce consistent outputs—users are more likely to trust and re-share.
+Avoid claiming “we access your invoices”; the product is **self-reported spend**, honestly.
 
-3. **Lead capture as an “update channel”**
-   - Users can opt in to receive report updates after sharing their results.
-   - This supports organic retention rather than cold marketing.
+---
 
+## Why this beats generic “AI cost calculators”
+
+Most calculators output a **single number** with opaque assumptions. AuditAI outputs **actions** (downgrade, remove redundant assistant, seat correction) tied to explicit rules—closer to how an operator actually fixes the problem.

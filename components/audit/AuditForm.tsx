@@ -12,7 +12,7 @@ import type {
 } from "@/lib/audit/types";
 import { DEFAULT_AUDIT_INPUT } from "@/lib/audit/types";
 import { generateAuditReport } from "@/lib/audit/engine";
-import { useLocalStorageJson } from "@/lib/storage/useLocalStorageJson";
+import { useSessionStorageJson } from "@/lib/storage/useSessionStorageJson";
 import { useAuditReport } from "@/contexts/AuditReportContext";
 import { formatMoneyDeterministic } from "@/lib/report/format";
 
@@ -128,7 +128,7 @@ function validate(input: AuditInputV1): FieldErrors {
 export function AuditForm() {
   const router = useRouter();
   const { setStored } = useAuditReport();
-  const { value: input, setValue: setInput, clearValue } = useLocalStorageJson<AuditInputV1>(
+  const { value: input, setValue: setInput, clearValue } = useSessionStorageJson<AuditInputV1>(
     STORAGE_KEY,
     DEFAULT_AUDIT_INPUT
   );
@@ -185,17 +185,20 @@ export function AuditForm() {
   }
 
   return (
-    <div className="mt-8 space-y-10">
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-white/10 dark:bg-white/5">
-        <h2 className="text-lg font-semibold tracking-tight">Company</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+    <div className="mt-8 space-y-8 sm:space-y-10">
+      <section className="rounded-3xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 sm:p-7">
+        <h2 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-lg">Team & context</h2>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+          Baseline details the audit uses alongside each subscription.
+        </p>
+        <div className="mt-5 grid gap-4 sm:grid-cols-3">
           <label className="grid gap-2">
-            <span className="text-sm font-medium">Team size</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Team size</span>
             <input
               type="number"
               inputMode="numeric"
               min={1}
-              className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
+              className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 transition focus:ring-4 dark:border-white/15 dark:bg-black/20"
               value={input.teamSize <= 0 ? "" : String(input.teamSize)}
               onFocus={(e) => e.currentTarget.select()}
               onChange={(e) => {
@@ -213,9 +216,9 @@ export function AuditForm() {
           </label>
 
           <label className="grid gap-2">
-            <span className="text-sm font-medium">Primary use case</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Primary use case</span>
             <select
-              className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
+              className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 transition focus:ring-4 dark:border-white/15 dark:bg-black/20"
               value={input.primaryUseCase}
               onChange={(e) =>
                 setInput({
@@ -233,9 +236,9 @@ export function AuditForm() {
           </label>
 
           <label className="grid gap-2">
-            <span className="text-sm font-medium">Currency</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Currency</span>
             <select
-              className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
+              className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 transition focus:ring-4 dark:border-white/15 dark:bg-black/20"
               value={input.currency}
               onChange={(e) =>
                 setInput({
@@ -254,24 +257,25 @@ export function AuditForm() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-white/10 dark:bg-white/5">
+      <section className="rounded-3xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 sm:p-7">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div>
-            <h2 className="text-lg font-semibold tracking-tight">AI tools</h2>
+            <h2 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-lg">Tools & spend</h2>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-              Add each tool you pay for. We’ll analyze redundancy, plan fit, cost-per-seat, and credits later.
+              One row per subscription: tool, plan, seats, and monthly spend. The audit evaluates overlap,
+              plan fit, and seat efficiency deterministically.
             </p>
           </div>
           <button
             type="button"
-            className="inline-flex h-10 items-center justify-center rounded-full bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
             onClick={addTool}
           >
-            Add tool
+            Add subscription
           </button>
         </div>
 
-        <div className="mt-6 space-y-4">
+        <div className="mt-6 space-y-4 sm:space-y-5">
           {input.tools.map((tool, idx) => {
             const toolErrors = errors.tools?.[idx];
             const showOtherName = tool.toolId === "other";
@@ -279,13 +283,13 @@ export function AuditForm() {
             return (
               <div
                 key={idx}
-                className="rounded-2xl border border-zinc-200 p-4 dark:border-white/10"
+                className="rounded-2xl border border-zinc-200/80 bg-zinc-50/60 p-4 dark:border-white/10 dark:bg-black/20"
               >
                 <div className="grid gap-4 md:grid-cols-12 md:items-end">
                   <label className="grid gap-2 md:col-span-3">
-                    <span className="text-sm font-medium">Tool</span>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Tool</span>
                     <select
-                      className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
+                      className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 transition focus:ring-4 dark:border-white/15 dark:bg-black/20"
                       value={tool.toolId}
                       onChange={(e) =>
                         updateToolSafe(idx, { toolId: e.target.value as ToolId })
@@ -304,9 +308,9 @@ export function AuditForm() {
 
                   {showOtherName ? (
                     <label className="grid gap-2 md:col-span-3">
-                      <span className="text-sm font-medium">Tool name</span>
+                      <span className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Tool name</span>
                       <input
-                        className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
+                        className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 transition focus:ring-4 dark:border-white/15 dark:bg-black/20"
                         value={tool.toolNameOverride ?? ""}
                         onChange={(e) =>
                           updateToolSafe(idx, { toolNameOverride: e.target.value })
@@ -324,9 +328,9 @@ export function AuditForm() {
                   )}
 
                   <label className="grid gap-2 md:col-span-3">
-                    <span className="text-sm font-medium">Plan type</span>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Plan type</span>
                     <select
-                      className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
+                      className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 transition focus:ring-4 dark:border-white/15 dark:bg-black/20"
                       value={tool.planType}
                       onChange={(e) =>
                         updateToolSafe(idx, { planType: e.target.value as PlanType })
@@ -344,16 +348,23 @@ export function AuditForm() {
                   </label>
 
                   <label className="grid gap-2 md:col-span-2">
-                    <span className="text-sm font-medium">Seats</span>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Seats</span>
                     <input
+                      type="number"
                       inputMode="numeric"
-                      className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
-                      value={String(tool.seats)}
-                      onChange={(e) =>
+                      min={1}
+                      className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 transition focus:ring-4 dark:border-white/15 dark:bg-black/20"
+                      value={tool.seats < 1 ? "" : String(tool.seats)}
+                      onFocus={(e) => e.currentTarget.select()}
+                      onChange={(e) => {
+                        if (e.target.value === "") {
+                          updateToolSafe(idx, { seats: 0 });
+                          return;
+                        }
                         updateToolSafe(idx, {
-                          seats: clampInt(Number(e.target.value), 1, 100000),
-                        })
-                      }
+                          seats: clampInt(Number(e.target.value), 0, 100000),
+                        });
+                      }}
                     />
                     {toolErrors?.seats ? (
                       <span className="text-xs text-red-600 dark:text-red-400">{toolErrors.seats}</span>
@@ -361,10 +372,10 @@ export function AuditForm() {
                   </label>
 
                   <label className="grid gap-2 md:col-span-3">
-                    <span className="text-sm font-medium">Monthly spend</span>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Monthly spend</span>
                     <input
                       inputMode="decimal"
-                      className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 focus:ring-4 dark:border-white/15 dark:bg-black/20"
+                      className="h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none ring-zinc-900/10 transition focus:ring-4 dark:border-white/15 dark:bg-black/20"
                       value={String(tool.monthlySpend)}
                       onChange={(e) =>
                         updateToolSafe(idx, {
@@ -388,7 +399,7 @@ export function AuditForm() {
                   </div>
                   <button
                     type="button"
-                    className="inline-flex h-9 items-center justify-center rounded-full border border-zinc-300 px-4 text-sm font-medium hover:bg-zinc-50 dark:border-white/15 dark:hover:bg-white/5"
+                    className="inline-flex h-9 items-center justify-center rounded-xl border border-zinc-300 px-4 text-sm font-medium hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:hover:bg-white/5"
                     onClick={() => removeTool(idx)}
                     disabled={input.tools.length <= 1}
                     aria-disabled={input.tools.length <= 1}
@@ -403,7 +414,7 @@ export function AuditForm() {
         </div>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-zinc-600 dark:text-zinc-300">
+          <div className="rounded-xl bg-zinc-100 px-4 py-2 text-sm text-zinc-700 dark:bg-white/10 dark:text-zinc-200">
             Monthly total:{" "}
             <span className="font-semibold text-zinc-900 dark:text-zinc-50">
               {formatMoneyDeterministic(input.currency, monthlyTotal)}
@@ -412,19 +423,19 @@ export function AuditForm() {
           <div className="flex gap-3">
             <button
               type="button"
-              className="inline-flex h-10 items-center justify-center rounded-full border border-zinc-300 px-5 text-sm font-medium hover:bg-zinc-50 dark:border-white/15 dark:hover:bg-white/5"
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-300 px-5 text-sm font-medium hover:bg-zinc-50 dark:border-white/15 dark:hover:bg-white/5"
               onClick={reset}
             >
               Reset
             </button>
             <button
               type="button"
-              className="inline-flex h-10 items-center justify-center rounded-full bg-zinc-900 px-5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-5 text-sm font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
               onClick={onGenerateAudit}
               disabled={isGenerating}
               aria-disabled={isGenerating}
             >
-              {isGenerating ? "Generating…" : "Generate audit"}
+              {isGenerating ? "Running audit…" : "Run audit"}
             </button>
           </div>
         </div>

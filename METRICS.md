@@ -1,71 +1,72 @@
 # Metrics
 
-These metrics are derived from the current user journey and implemented endpoints:
-
-- deterministic audit generation on the client
-- persistence to Supabase via `POST /api/reports`
-- optional executive summary via `POST /api/summary` with fallback
-- lead capture via `POST /api/leads`
+AuditAI is a **B2B lead-generation and decision-support** product—not a social consumer app. Metrics should track **artifact creation, sharing, and qualified interest**, not vanity pageviews alone.
 
 ---
 
-## North-Star Metric
+## North Star metric
 
-**Shareable public reports created**
+**Persisted public reports per week** (`POST /api/reports` returning **201**, `is_public = true`)
 
-- Definition: number of successfully persisted report rows in `public.audit_reports` (where `is_public = true`), aggregated by time window (daily/weekly).
-- Why this is the north star:
-  - it represents a user reaching the “decision artifact” moment (a public URL they can share internally)
-  - it directly ties to a measurable backend event (`/api/reports` returning `201`)
+**Why:** A saved report is the **shareable decision artifact**—the moment a team can forward a URL to finance or leadership. Everything upstream (visits, audits) is diagnostic; everything downstream (leads, consults) is conversion.
 
 ---
 
-## Supporting Metrics
+## Three input metrics (leading indicators)
 
-1. **Audit activation rate**
-  - Definition: % of landing/audit page visits that generate deterministic recommendations and navigate to `/results`.
-  - Proxy signals in code:
-    - navigation occurs after `AuditForm` sets stored report state and routes to `/results`.
-2. **Persistence conversion rate**
-  - Definition: % of `/results` sessions that successfully call `POST /api/reports` and obtain an `id`.
-  - Why it matters: it measures whether users find the output worth sharing.
-3. **Share link readiness rate**
-  - Definition: % of persisted reports where the computed `shareUrl` is non-null and the UI copy action is used.
-  - Note: the current code doesn’t record analytics; you’d add lightweight event logging around the “Copy share link” handler.
-4. **Lead capture opt-in rate**
-  - Definition: leads created per persisted report.
-  - Backend tie-in: `/api/leads` returns `201` with a deterministic JSON structure `{ id, createdAt }`.
-5. **AI summary success rate**
-  - Definition: % of summary requests that return AI source vs fallback source.
-  - Backend tie-in: `/api/summary` returns `{ ok: true, summary, source }` and `generateAuditSummary()` chooses `ai` vs `fallback`.
-6. **AI summary failure / fallback rate**
-  - Definition: % of summary requests that ended in fallback due to missing keys or provider errors.
-  - Why it matters: high fallback rates reduce perceived value of the AI layer (even though deterministic output remains valuable).
+These feed the north star and surface funnel breakage early:
+
+1. **Audit completion rate**  
+   - **Definition:** Sessions that run `generateAuditReport` and land on `/results` ÷ sessions that start `/audit` with intent (e.g., first field interaction or “Run audit” click—pick one instrumentation definition and keep it stable).  
+   - **Why:** Measures form friction and perceived value of starting.
+
+2. **Persistence success rate**  
+   - **Definition:** `201` responses from `POST /api/reports` ÷ attempts (client-side retries deduped if possible).  
+   - **Why:** Separates “liked results” from **technical/config failure** (Supabase, RLS, network).
+
+3. **Qualified lead rate (from persisted reports)**  
+   - **Definition:** `POST /api/leads` **201** ÷ persisted reports in the same cohort window.  
+   - **Why:** Measures whether the **artifact + copy** compels a low-friction opt-in.
 
 ---
 
-## Activation Metric
+## Instrumentation priorities (practical order)
 
-**Primary activation:** persisted public report creation
+| Priority | Event / metric | Implementation note |
+| --- | --- | --- |
+| P0 | Report persisted (201) | Server log + optional `report_id` hash (no PII). |
+| P1 | Audit completed (client) | Single analytics event after navigation to `/results`. |
+| P2 | Lead submitted (201) | Server log; never log raw email in plaintext. |
+| P3 | Share link copied | Client event on successful clipboard write. |
+| P4 | AI summary source | Count `source: ai` vs `fallback` from `/api/summary` responses (aggregate). |
 
-- Definition: user generates audit → reaches `/results` → report persistence succeeds (`/api/reports` returns 201).
-
-Secondary activation (optional):
-
-- user reads recommendations and sees the executive summary card (AI or fallback).
+Use **one** product analytics tool or structured logs first—dual tracking doubles failure modes.
 
 ---
 
-## Retention Signals
+## Pivot threshold (example policy)
 
-Because there is no login in the current MVP, retention should be measured with anonymous, client-side signals (e.g., localStorage counters) or operational aggregates:
+**Review positioning if for 4 consecutive weeks:**
 
-1. **Repeat audit artifact creation**
-  - Definition: % of anonymous users who create a second persisted report within 7/14 days.
-2. **Re-sharing of prior outputs**
-  - Definition: users generating multiple share URLs or re-copying share links from the same session.
-3. **Lead follow-up responsiveness (future)**
-  - If/when outbound confirmation is fully enabled, measure:
-    - open/click rates
-    - conversion back to running audits
+- **Persistence rate** under 8% of audit completions **and**  
+- **Lead rate** under 2% of persisted reports **and**  
+- Qualitative feedback says “not actionable”
 
+**Interpretation:** Users may not trust self-reported inputs, may not need sharing, or the ICP is wrong—**do not** scale spend before diagnosing which leg failed.
+
+---
+
+## Supporting diagnostics (secondary)
+
+- AI summary **fallback rate** (high fallback ⇒ fix provider reliability or expectations).
+- **Error rate** on `/api/leads` and `/api/reports` by error code (RLS vs validation vs 5xx).
+- **Time-to-persist** (results paint → first successful 201) for performance SLAs.
+
+---
+
+## Retention (no-login MVP)
+
+Without accounts, use **operational proxies**:
+
+- Repeat **persisted reports** from the same **hashed network fingerprint** or **company email domain** (privacy-sensitive—only with consent).
+- **Return visits** to `/report/[id]` (server logs) as weak sharing signal.

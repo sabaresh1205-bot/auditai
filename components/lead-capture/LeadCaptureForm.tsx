@@ -1,15 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 const SESSION_KEY_PREFIX = "auditai:leadSubmitted:";
+
+const SUCCESS_COPY = "✓ Thanks — your audit confirmation email has been sent.";
 
 type LeadCaptureFormProps = {
   reportId: string | null;
   defaultTeamSize?: number;
+  /** Efficient / low-savings audit: emphasize future optimization alerts. */
+  optimizedStack?: boolean;
 };
 
-export function LeadCaptureForm({ reportId, defaultTeamSize }: LeadCaptureFormProps) {
+export function LeadCaptureForm({
+  reportId,
+  defaultTeamSize,
+  optimizedStack = false,
+}: LeadCaptureFormProps) {
   const [email, setEmail] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [role, setRole] = useState("");
@@ -19,17 +27,17 @@ export function LeadCaptureForm({ reportId, defaultTeamSize }: LeadCaptureFormPr
   const [message, setMessage] = useState("");
   const [lastAttemptAt, setLastAttemptAt] = useState<number | null>(null);
 
-  const alreadySubmitted = useMemo(() => {
-    if (!reportId || typeof window === "undefined") return false;
-    return window.sessionStorage.getItem(`${SESSION_KEY_PREFIX}${reportId}`) === "1";
-  }, [reportId]);
+  const alreadySubmitted =
+    Boolean(reportId) &&
+    typeof window !== "undefined" &&
+    window.sessionStorage.getItem(`${SESSION_KEY_PREFIX}${reportId}`) === "1";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (alreadySubmitted) return;
+    if (status === "loading" || alreadySubmitted) return;
     if (!reportId) {
       setStatus("error");
-      setMessage("Save the report first to submit your email.");
+      setMessage("Finish saving your report, then submit your email.");
       return;
     }
     if (!email.includes("@")) {
@@ -74,8 +82,13 @@ export function LeadCaptureForm({ reportId, defaultTeamSize }: LeadCaptureFormPr
       }
 
       window.sessionStorage.setItem(`${SESSION_KEY_PREFIX}${reportId}`, "1");
+      setEmail("");
+      setCompanyName("");
+      setRole("");
+      setTeamSize("");
+      setHoney("");
       setStatus("success");
-      setMessage("Thanks! We saved your details.");
+      setMessage("");
     } catch (error) {
       setStatus("error");
       setMessage(error instanceof Error ? error.message : "Submission failed.");
@@ -83,15 +96,29 @@ export function LeadCaptureForm({ reportId, defaultTeamSize }: LeadCaptureFormPr
   }
 
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
-      <h2 className="text-lg font-semibold tracking-tight">Get your report by email</h2>
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
-        We already showed your audit value. Add email to receive updates.
+    <section className="no-print rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
+      <h2 className="text-lg font-semibold tracking-tight">Optional follow-up</h2>
+      <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+        {optimizedStack ? (
+          <>
+            <span className="font-medium text-zinc-800 dark:text-zinc-200">
+              Notify me about future optimization opportunities.
+            </span>{" "}
+            Add your work email below—we’ll only reach out when new pricing or tooling shifts might
+            help your stack.
+          </>
+        ) : (
+          <>Your audit is complete—add email only if you want us to reach out with updates.</>
+        )}
       </p>
 
       {alreadySubmitted ? (
-        <p className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
-          Email already submitted for this report in this session.
+        <p
+          role="status"
+          aria-live="polite"
+          className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200"
+        >
+          {SUCCESS_COPY}
         </p>
       ) : (
         <form className="mt-4 grid gap-3" onSubmit={onSubmit}>
@@ -151,14 +178,20 @@ export function LeadCaptureForm({ reportId, defaultTeamSize }: LeadCaptureFormPr
           <button
             type="submit"
             disabled={status === "loading"}
-            className="inline-flex h-11 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            className="inline-flex w-full items-center justify-center rounded-xl bg-zinc-900 px-4 py-3 text-center text-sm font-medium leading-snug text-white hover:bg-zinc-800 disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            {status === "loading" ? "Submitting..." : "Submit email"}
+            {status === "loading" ? (
+              "Submitting…"
+            ) : optimizedStack ? (
+              "Notify me about future optimization opportunities"
+            ) : (
+              "Submit"
+            )}
           </button>
         </form>
       )}
 
-      {message ? (
+      {message && !alreadySubmitted ? (
         <p
           role="status"
           aria-live="polite"
@@ -174,4 +207,3 @@ export function LeadCaptureForm({ reportId, defaultTeamSize }: LeadCaptureFormPr
     </section>
   );
 }
-

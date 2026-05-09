@@ -6,6 +6,8 @@ import { buildPublicReportPayload } from "@/lib/report/public";
 import { AuditSummaryCard } from "@/components/results/AuditSummaryCard";
 import { RecommendationCard } from "@/components/results/RecommendationCard";
 import { SavingsBreakdown } from "@/components/results/SavingsBreakdown";
+import { formatMoneyDeterministic } from "@/lib/report/format";
+import { getPublicReportPageUrl } from "@/lib/seo/publicSiteUrl";
 
 type Params = { id: string };
 
@@ -30,16 +32,23 @@ export async function generateMetadata({
       return { title: "Audit report not found | AuditAI" };
     }
     const { payload } = loaded;
-    const amount = payload.report.annualSavings.toFixed(0);
-    const title = `This team could save $${amount}/year on AI tools.`;
-    const description = `AuditAI report with deterministic recommendations and ${payload.report.recommendations.length} actions.`;
+    const { report } = payload;
+    const monthlyLabel = formatMoneyDeterministic(report.summary.currency, report.monthlySavings);
+    const annualLabel = formatMoneyDeterministic(report.summary.currency, report.annualSavings);
+    const title = `AuditAI Report — Potential savings: ${monthlyLabel}/month`;
+    const description = `Deterministic AI spend audit: ${monthlyLabel}/month (${annualLabel}/year) estimated savings, ${report.recommendations.length} recommendation(s). Shareable AuditAI report.`;
+    const canonicalUrl = getPublicReportPageUrl(id);
+
     return {
-      title,
+      title: { absolute: title },
       description,
+      ...(canonicalUrl ? { alternates: { canonical: canonicalUrl } } : {}),
       openGraph: {
         title,
         description,
         type: "article",
+        siteName: "AuditAI",
+        ...(canonicalUrl ? { url: canonicalUrl } : {}),
       },
       twitter: {
         card: "summary_large_image",
@@ -65,36 +74,65 @@ export default async function PublicReportPage({
   const { report, insights } = payload;
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 py-14">
+    <main className="print-document mx-auto flex w-full max-w-6xl flex-1 flex-col px-5 py-10 sm:px-6 sm:py-12">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
-            Public Audit Report
+            Shared savings report
           </p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-            Savings and recommendations
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
+            Savings & recommendations
           </h1>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
-            Report ID {row.id} • Generated {new Date(row.created_at).toLocaleString()}
+            Report ID {row.id} · Generated {new Date(row.created_at).toLocaleString()}
           </p>
         </div>
         <Link
-          href="/"
-          className="inline-flex h-10 items-center justify-center rounded-full border border-zinc-300 px-5 text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:border-white/15 dark:text-zinc-50 dark:hover:bg-white/5"
+          href="/audit"
+          className="no-print inline-flex h-10 items-center justify-center rounded-xl border border-zinc-300 px-5 text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:border-white/15 dark:text-zinc-50 dark:hover:bg-white/5"
         >
-          Create your own audit
+          Run free audit
         </Link>
       </div>
 
-      <div className="mt-8 space-y-6">
+      <section className="mt-8 rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm dark:border-emerald-500/30 dark:bg-white/5 sm:p-8">
+        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Potential savings</p>
+        <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Monthly savings</p>
+            <p className="mt-1 text-3xl font-semibold tracking-tight text-emerald-700 dark:text-emerald-300">
+              {formatMoneyDeterministic(report.summary.currency, report.monthlySavings)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Annual savings</p>
+            <p className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              {formatMoneyDeterministic(report.summary.currency, report.annualSavings)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">Status</p>
+            <p className="mt-1 text-base font-medium text-zinc-800 dark:text-zinc-200">
+              {report.monthlySavings > 0 ? "Savings identified" : "Spend looks aligned"}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="mt-6 space-y-6">
         <AuditSummaryCard
           summary={report.summary}
           monthlySavings={report.monthlySavings}
           annualSavings={report.annualSavings}
         />
-        <div className="grid gap-6 lg:grid-cols-12">
+        <div className="print-flatten-grid grid gap-6 lg:grid-cols-12">
           <section className="lg:col-span-8 space-y-4">
-            <h2 className="text-lg font-semibold tracking-tight">Recommendations</h2>
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+              <h2 className="text-lg font-semibold tracking-tight">Deterministic recommendations</h2>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+                Ranked by estimated monthly impact. Figures are produced by deterministic audit rules only.
+              </p>
+            </div>
             {report.recommendations.map((r) => (
               <RecommendationCard
                 key={`${r.toolId}:${r.type}:${r.recommendedAction}`}

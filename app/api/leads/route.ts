@@ -42,7 +42,16 @@ export async function POST(req: Request) {
       team_size: typeof parsed.teamSize === "number" ? parsed.teamSize : null,
     });
 
-    await sendAuditConfirmationEmail({ toEmail: parsed.email });
+    const emailResult = await sendAuditConfirmationEmail({
+      toEmail: parsed.email,
+      reportId: parsed.reportId,
+    });
+    if (!emailResult.ok) {
+      console.error("[auditai] POST /api/leads: confirmation email not sent", {
+        provider: emailResult.provider,
+        reason: emailResult.reason,
+      });
+    }
 
     return NextResponse.json({ id: lead.id, createdAt: lead.created_at }, { status: 201 });
   } catch (error) {

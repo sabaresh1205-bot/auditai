@@ -23,22 +23,22 @@ export function SavingsBreakdown({
 
   if (positive.length === 0) {
     return (
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
+      <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5 sm:p-7">
         <h2 className="text-lg font-semibold tracking-tight">Savings breakdown</h2>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
-          No savings opportunities were detected from the current inputs.
+          No material savings surfaced from these inputs—you can still export or share once a link is ready.
         </p>
       </section>
     );
   }
 
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
+    <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5 sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Savings breakdown</h2>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-            Top drivers of your estimated monthly savings.
+            Largest contributors to estimated monthly savings.
           </p>
         </div>
         <div className="text-right">
@@ -55,12 +55,12 @@ export function SavingsBreakdown({
         {top.map((r) => (
           <div key={`${r.toolId}:${r.type}:${r.recommendedAction}`} className="grid grid-cols-12 gap-3">
             <div className="col-span-7 text-sm font-medium">{r.tool}</div>
-            <div className="col-span-5 text-right text-sm font-semibold">
+            <div className="col-span-5 text-right text-sm font-semibold text-emerald-700 dark:text-emerald-300">
               {formatMoneyDeterministic(currency, r.estimatedSavings)}
             </div>
             <div className="col-span-12 h-2 rounded-full bg-zinc-100 dark:bg-white/10">
               <div
-                className="h-2 rounded-full bg-zinc-900 dark:bg-white"
+                className="h-2 rounded-full bg-emerald-600 dark:bg-emerald-400"
                 style={{
                   width: `${Math.max(6, Math.round((r.estimatedSavings / total) * 100))}%`,
                 }}

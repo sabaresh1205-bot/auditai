@@ -2,117 +2,105 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-full bg-white text-zinc-950 dark:bg-black dark:text-zinc-50">
-      <header className="sticky top-0 z-10 border-b border-zinc-200/60 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-black/60">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-black">
+    <div className="min-h-full bg-zinc-50 text-zinc-950 dark:bg-black dark:text-zinc-50">
+      <header className="sticky top-0 z-10 border-b border-zinc-200/70 bg-white/90 backdrop-blur dark:border-white/10 dark:bg-black/70">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-6">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-sm font-semibold tracking-tight sm:text-base"
+            aria-label="AuditAI home"
+          >
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-xs font-bold text-white dark:bg-white dark:text-black" aria-hidden>
               AI
             </span>
-            <span>AuditAI</span>
-          </div>
+            <span className="text-zinc-900 dark:text-zinc-100">AuditAI</span>
+          </Link>
           <nav className="flex items-center gap-3">
             <Link
               href="/audit"
-              className="inline-flex h-10 items-center justify-center rounded-full bg-zinc-900 px-5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
             >
-              Run a free audit
+              Run Free Audit
             </Link>
           </nav>
         </div>
       </header>
 
       <main>
-        <section className="mx-auto max-w-6xl px-6 pb-14 pt-16">
-          <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
-            <div className="lg:col-span-7">
+        <section className="mx-auto max-w-6xl px-5 pb-12 pt-14 sm:px-6 sm:pt-16">
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-950/50 sm:p-10">
+            <div className="mx-auto max-w-3xl text-center">
               <p className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
-                Rule-based spend audit • No login required
+                Deterministic AI spend audit
               </p>
-              <h1 className="mt-5 text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
-                Audit and optimize your AI tool spend in minutes.
+              <h1 className="mt-5 text-balance text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
+                Stop overpaying for AI tools.
               </h1>
-              <p className="mt-4 max-w-2xl text-pretty text-lg leading-8 text-zinc-700 dark:text-zinc-300">
-                Enter your tools, plans, seats, and monthly spend. AuditAI flags
-                overkill plans, redundant subscriptions, and credit-based savings
-                opportunities—then estimates what you can save.
+              <p className="mx-auto mt-5 max-w-2xl text-pretty text-base leading-7 text-zinc-600 dark:text-zinc-300 sm:text-lg">
+                AuditAI scores your stack with transparent, rule-based logic: plan fit,
+                overlap, seats, and usage signals. You get an exportable savings report in
+                minutes, plus an optional AI executive summary—with a deterministic fallback
+                if the model isn’t available.
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:items-center">
                 <Link
                   href="/audit"
-                  className="inline-flex h-12 items-center justify-center rounded-full bg-zinc-900 px-6 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                  className="inline-flex h-12 items-center justify-center rounded-xl bg-zinc-900 px-7 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                 >
-                  Start the audit
+                  Run Free Audit
                 </Link>
-                <div className="text-sm text-zinc-600 dark:text-zinc-400">
-                  Get recommendations and savings first. Email comes after.
+                <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                  No account required
                 </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-5">
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
-                <div className="text-sm font-semibold">What you’ll get</div>
-                <dl className="mt-4 grid gap-4">
-                  <div className="rounded-xl bg-zinc-50 p-4 dark:bg-black/30">
-                    <dt className="text-sm font-medium">Per-tool actions</dt>
-                    <dd className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-                      Concrete changes with numeric savings and a clear reason.
-                    </dd>
-                  </div>
-                  <div className="rounded-xl bg-zinc-50 p-4 dark:bg-black/30">
-                    <dt className="text-sm font-medium">Savings math</dt>
-                    <dd className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-                      Monthly and yearly savings totals, plus cost-per-seat.
-                    </dd>
-                  </div>
-                  <div className="rounded-xl bg-zinc-50 p-4 dark:bg-black/30">
-                    <dt className="text-sm font-medium">Shareable report</dt>
-                    <dd className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-                      A public URL you can send to your cofounder or finance.
-                    </dd>
-                  </div>
-                </dl>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="border-t border-zinc-200/70 bg-zinc-50 dark:border-white/10 dark:bg-white/5">
-          <div className="mx-auto max-w-6xl px-6 py-14">
-            <h2 className="text-xl font-semibold tracking-tight">
-              How it works
-            </h2>
-            <div className="mt-6 grid gap-6 md:grid-cols-3">
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-white/10 dark:bg-black/20">
-                <div className="text-sm font-semibold">1) Input your stack</div>
+        <section className="mx-auto max-w-6xl px-5 pb-12 sm:px-6">
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-950/40 sm:p-8">
+            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">How it works</h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50 p-5 dark:border-white/10 dark:bg-black/20">
+                <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Input your stack</div>
                 <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-                  Tools, plan types, monthly spend, seats, team size, and use
-                  case.
+                  Add tools, plans, monthly spend, seats, team size, and primary use case.
                 </p>
               </div>
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-white/10 dark:bg-black/20">
-                <div className="text-sm font-semibold">2) Rules run</div>
+              <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50 p-5 dark:border-white/10 dark:bg-black/20">
+                <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">The audit runs</div>
                 <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-                  Deterministic checks for plan optimization, redundancy, and
-                  credits/usage mismatches.
+                  Deterministic rules evaluate plan fit, overlap, seats, efficiency, and credit opportunities—without guessing.
                 </p>
               </div>
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-white/10 dark:bg-black/20">
-                <div className="text-sm font-semibold">3) See savings</div>
+              <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50 p-5 dark:border-white/10 dark:bg-black/20">
+                <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Get savings report</div>
                 <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-                  Actionable recommendations with numeric savings and a clear
-                  reason.
+                  Review clear recommendations, savings totals, and a shareable report link.
                 </p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-5 pb-16 sm:px-6">
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-950/40 sm:p-8">
+            <h3 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              Built for teams that need clarity, not hype
+            </h3>
+            <div className="mt-4 grid gap-3 text-sm text-zinc-600 dark:text-zinc-300 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-xl bg-zinc-50 px-4 py-3 dark:bg-black/20">Deterministic recommendations</div>
+              <div className="rounded-xl bg-zinc-50 px-4 py-3 dark:bg-black/20">No account required</div>
+              <div className="rounded-xl bg-zinc-50 px-4 py-3 dark:bg-black/20">Shareable report links</div>
+              <div className="rounded-xl bg-zinc-50 px-4 py-3 dark:bg-black/20">AI summary + deterministic fallback</div>
             </div>
           </div>
         </section>
       </main>
 
       <footer className="border-t border-zinc-200/70 dark:border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-10 text-sm text-zinc-600 dark:text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-10 text-sm text-zinc-600 dark:text-zinc-400 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div>© {new Date().getFullYear()} AuditAI</div>
           <div className="flex gap-4">
             <span className="text-zinc-500 dark:text-zinc-500">

@@ -1,123 +1,49 @@
 # Tests
 
-This repo’s tests focus on the deterministic parts of the system: the audit rule engine and the numeric savings logic.
-
-The LLM layer (`/api/summary`) and external providers are intentionally not unit-tested here because provider responses are non-deterministic and require external credentials.
-
----
-
-## Test Structure
-
-### Framework
-- **Vitest**
-- Node test environment: configured in `vitest.config.ts`
-
-### Where tests live
-- `auditai/tests/audit/*.test.ts`
-
-### What coverage includes
-`vitest.config.ts` configures coverage to include:
-- `lib/audit/**/*.ts`
-
-### Test runner configuration
-`auditai/vitest.config.ts`:
-- discovers tests with: `include: ["tests/**/*.test.ts"]`
-- enables global test APIs (`globals: true`)
-- uses `vite-tsconfig-paths` so `@/` imports work in tests
+This repo’s tests focus on the **deterministic** audit engine and numeric savings logic.  
+The LLM layer (`POST /api/summary`) and external providers are **not** unit-tested here (non-deterministic; requires credentials).
 
 ---
 
-## Deterministic Validation Philosophy
+## Framework and commands
 
-The central goal is to ensure the audit engine remains stable and honest:
-
-1. **No invention of savings**
-   - When rules don’t detect a concrete opportunity, the engine should return `NO_CHANGE` with `estimatedSavings = 0`, not fabricated savings.
-
-2. **Deterministic tie-breaking**
-   - When multiple rules could apply, selection is performed using explicit precedence and stable ordering.
-   - Tests assert the deterministic outcome (for example: which tool is removed in overlapping cases).
-
-3. **Numeric assertions over string snapshots**
-   - Tests validate:
-     - recommendation `type` and `confidence`
-     - `estimatedSavings` values
-     - totals (`monthlySavings` / `annualSavings`)
-
-4. **Edge-case robustness without crashes**
-   - Tests ensure the engine does not throw and still produces valid outputs when inputs are “messy” (e.g., zero spend, empty tool arrays, invalid seat counts).
+| Item | Detail |
+| --- | --- |
+| **Runner** | [Vitest](https://vitest.dev/) |
+| **Config** | `vitest.config.ts` — `include: ["tests/**/*.test.ts"]`, `vite-tsconfig-paths` for `@/` imports |
+| **Run tests** | `npm test` |
+| **Coverage** | `npm run coverage` — includes `lib/audit/**/*.ts` per Vitest coverage config |
 
 ---
 
-## Major Business-Rule Test Scenarios
+## Automated test files (complete list)
 
-### Overkill plan detection
-- File: `tests/audit/overkill-plans.test.ts`
-- Scenario:
-  - team size below plan intended minimum for a seat-based tool
-- Assertions:
-  - recommendation `type === "DOWNGRADE_PLAN"`
-  - savings totals are positive and annual savings match monthly × 12
-
-### Redundant assistant detection
-- File: `tests/audit/redundancy.test.ts`
-- Scenario:
-  - multiple overlapping assistants (ChatGPT + Claude + Gemini)
-- Assertions:
-  - at least one `REMOVE_TOOL` recommendation appears
-  - deterministic removal of the most expensive assistant
-  - `monthlySavings` reflects the selected deterministic savings
-
-### High API spend detection
-- File: `tests/audit/api-spend.test.ts`
-- Scenario:
-  - API usage above a spend band threshold
-- Assertions:
-  - recommendation `type === "OPTIMIZE_USAGE"`
-  - deterministic savings estimate computed from the spend band
-
-### Credit opportunity
-- File: `tests/audit/credit-opportunity.test.ts`
-- Scenario:
-  - total spend exceeds the $500 threshold
-- Assertions:
-  - `CREDIT_DISCOUNT` appears with toolId `"other"`
-  - totals contribute deterministically
-
-### “Already optimized” behavior
-- File: `tests/audit/optimized-stack.test.ts`
-- Scenario:
-  - a small realistic setup where no rules should trigger savings
-- Assertions:
-  - `monthlySavings === 0` and `annualSavings === 0`
-  - recommendation type for the tool is `NO_CHANGE`
+| File | What it covers |
+| --- | --- |
+| `tests/audit/overkill-plans.test.ts` | **Overkill plan** detection: team size below plan’s intended range → `DOWNGRADE_PLAN` (or equivalent savings); positive totals; annual = monthly × 12 pattern. |
+| `tests/audit/redundancy.test.ts` | **Redundant assistants** (e.g., ChatGPT + Claude + Gemini): `REMOVE_TOOL`; deterministic choice of which overlapping assistant is removed; savings align with removed spend. |
+| `tests/audit/api-spend.test.ts` | **High API spend** (`openai_api` / `anthropic_api`): `OPTIMIZE_USAGE`-style opportunities from spend bands; deterministic savings from usage rules. |
+| `tests/audit/credit-opportunity.test.ts` | **Credit / discount** path when total spend crosses catalog threshold: `CREDIT_DISCOUNT` behavior and contribution to totals. |
+| `tests/audit/optimized-stack.test.ts` | **No-change / efficient stack**: near-zero or zero `monthlySavings`, `NO_CHANGE` recommendations where appropriate. |
+| `tests/audit/edge-cases.test.ts` | **Robustness**: zero spend, empty `tools` array, invalid seats, **duplicate tool rows** (tie-breaking / no double-counting), large enterprise spend + severity. |
+| `tests/audit/savings-totals.test.ts` | **Savings totals integrity**: `annualSavings` matches rounded `monthlySavings × 12`; sum of positive `estimatedSavings` on emitted recommendations matches `monthlySavings`; zero totals for minimal rightsized scenario. |
 
 ---
 
-## Edge-Case Coverage
+## Deterministic validation philosophy
 
-Edge cases are covered in `tests/audit/edge-cases.test.ts`.
-
-The current suite covers:
-- zero spend across tools (no positive savings)
-- empty `tools` array (engine should not throw; output has empty recommendations and zero savings)
-- invalid seat counts (e.g., `seats = 0`) doesn’t crash; engine clamps/handles deterministically
-- duplicate tool rows:
-  - ensures per-tool savings do not stack
-  - validates deterministic choice when the tie occurs
-- huge enterprise spend:
-  - ensures severity is high where appropriate and savings are positive
+1. **No invented savings** — rules emit `NO_CHANGE` with zero savings when nothing material is found.  
+2. **Deterministic tie-breaking** — precedence by recommendation type, then savings, then stable string compare (see `lib/audit/engine.ts`).  
+3. **Numeric assertions** — prefer exact checks on `type`, `estimatedSavings`, and totals over brittle full-object snapshots.  
+4. **No throws on messy input** — engine must return a valid report object.
 
 ---
 
-## CI Integration
+## CI
 
-CI is defined in `auditai/.github/workflows/ci.yml` and runs:
+`auditai/.github/workflows/ci.yml` runs:
 
-1. `npm ci`
-2. `npm run lint`
-3. `npm test` (executes Vitest)
-4. `npm run build`
-
-CI ensures lint, unit tests, and a production build succeed.
-
+1. `npm ci`  
+2. `npm run lint`  
+3. `npm test` (Vitest)  
+4. `npm run build` (with non-secret placeholder Supabase env vars)

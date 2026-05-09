@@ -71,6 +71,7 @@ Add your real screenshots into `screenshots/` when ready. Expected placeholders:
 ### Lead capture (post-share)
 
 - `LeadCaptureForm` posts to `**/api/leads**`
+- After a lead row is inserted in Supabase, the server sends a **transactional confirmation email** via [Resend](https://resend.com) when `RESEND_API_KEY` is configured. Email failures are logged server-side and do not fail the API response.
 - Anti-spam:
   - hidden “honey” field
   - server-side cooldown (`COOLDOWN_MS = 8000`)
@@ -141,10 +142,17 @@ Optional (if you want to bypass RLS for leads from the server):
 
 - `SUPABASE_SERVICE_ROLE_KEY`
 
+Transactional email (Resend):
+
+- `RESEND_API_KEY` — required to send lead confirmation messages
+- `AUDITAI_FROM_EMAIL` — optional verified sender (defaults to `onboarding@resend.dev` for Resend’s test domain)
+- `NEXT_PUBLIC_BASE_URL` — recommended in production so confirmation emails include the correct shareable report link (falls back to `VERCEL_URL` on Vercel)
+
 Notes:
 
 - The deterministic audit engine does not require LLM keys.
 - If the AI provider keys are missing or the provider call fails, the app uses deterministic fallback text.
+- If Resend is not configured or a send fails, lead capture still returns `201` after a successful database insert.
 
 ---
 
@@ -283,6 +291,12 @@ Optionally set:
 If leads must succeed regardless of anon policies:
 
 - `SUPABASE_SERVICE_ROLE_KEY`
+
+For transactional lead emails:
+
+- `RESEND_API_KEY`
+- `AUDITAI_FROM_EMAIL` (optional)
+- `NEXT_PUBLIC_BASE_URL` (recommended for correct report links in email)
 
 ### 3) CI/build
 In CI, the build step runs with non-sensitive environment values. Real Supabase connectivity depends on the correct environment variables in your deployment.

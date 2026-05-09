@@ -27,7 +27,7 @@ function SummarySkeleton() {
 }
 
 function sourceLabel(source: "ai" | "fallback") {
-  return source === "ai" ? "AI summary" : "Deterministic fallback";
+  return source === "ai" ? "AI-generated" : "Deterministic fallback";
 }
 
 export function AISummaryCard({
@@ -50,14 +50,14 @@ export function AISummaryCard({
   }, [hasSavings]);
 
   return (
-    <section className={`rounded-2xl p-6 ${wrapperClass}`}>
+    <section className={`rounded-3xl p-6 sm:p-7 ${wrapperClass}`}>
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
-            Executive summary
+            Executive summary (optional)
           </p>
           <h2 className={`mt-1 text-xl font-semibold tracking-tight ${hasSavings ? "text-emerald-900 dark:text-emerald-100" : ""}`}>
-            {hasSavings ? "Potential savings, prioritized actions" : "Stack looks optimized"}
+            {hasSavings ? "Where to prioritize savings" : "Spend profile looks efficient"}
           </h2>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
             {formatMoneyDeterministic(currency, monthlySavings)} / month •{" "}
@@ -65,7 +65,7 @@ export function AISummaryCard({
           </p>
         </div>
         {source ? (
-          <span className="rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-black">
+          <span className="no-print rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-black">
             {sourceLabel(source)}
           </span>
         ) : null}
@@ -73,30 +73,37 @@ export function AISummaryCard({
 
       <div className="mt-5">
         {status === "loading" ? (
-          <SummarySkeleton />
-        ) : status === "error" ? (
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-red-700 dark:text-red-300">
-              Summary temporarily unavailable.
-            </p>
-            <p className="text-sm text-zinc-600 dark:text-zinc-300">
-              {errorMessage ?? "Please try again."}
-            </p>
-            <button
-              type="button"
-              onClick={onRetry}
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-white/90"
-            >
-              Retry summary
-            </button>
+          <div className="no-print">
+            <SummarySkeleton />
           </div>
+        ) : status === "error" ? (
+          <>
+            <div className="no-print space-y-3">
+              <p className="text-sm font-medium text-red-700 dark:text-red-300">
+                We couldn’t load the summary.
+              </p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                {errorMessage ?? "Check your connection and try again."}
+              </p>
+              <button
+                type="button"
+                onClick={onRetry}
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-white/90"
+              >
+                Try again
+              </button>
+            </div>
+            <p className="print-only text-sm leading-6 text-zinc-600">
+              Executive summary was not available for this PDF export.
+            </p>
+          </>
         ) : summary ? (
           <p className="whitespace-pre-wrap text-sm leading-7 text-zinc-700 dark:text-zinc-200">
             {summary}
           </p>
         ) : (
-          <p className="text-sm text-zinc-600 dark:text-zinc-300">
-            Preparing your summary…
+          <p className="no-print text-sm text-zinc-600 dark:text-zinc-300">
+            Generating summary…
           </p>
         )}
       </div>

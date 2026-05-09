@@ -80,6 +80,10 @@ export const leadSubmissionSchema = z.object({
     .optional()
     .transform((v) => (v && v.length > 0 ? v : undefined)),
   teamSize: z.number().int().min(1).max(100000).optional(),
+  reportId: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? undefined : v),
+    z.string().trim().uuid().optional()
+  ),
   honey: z.string().max(0).optional(),
   cooldownAt: z.number().int().optional(),
 });
