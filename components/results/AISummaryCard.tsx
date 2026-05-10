@@ -50,7 +50,7 @@ export function AISummaryCard({
   }, [hasSavings]);
 
   return (
-    <section className={`rounded-3xl p-6 sm:p-7 ${wrapperClass}`}>
+    <section className={`print-avoid-break print-compact rounded-3xl p-6 sm:p-7 ${wrapperClass}`}>
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">

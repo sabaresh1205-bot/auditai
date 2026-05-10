@@ -97,7 +97,7 @@ export default async function PublicReportPage({
         </Link>
       </div>
 
-      <section className="mt-8 rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm dark:border-emerald-500/30 dark:bg-white/5 sm:p-8">
+      <section className="print-section print-avoid-break print-compact mt-8 rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm dark:border-emerald-500/30 dark:bg-white/5 sm:p-8">
         <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Potential savings</p>
         <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <div>
@@ -121,7 +121,7 @@ export default async function PublicReportPage({
         </div>
       </section>
 
-      <div className="mt-6">
+      <div className="print-section mt-6">
         <BenchmarkCard
           totalMonthlySpend={report.summary.totalMonthlySpend}
           teamSize={report.summary.teamSize}
@@ -161,11 +161,11 @@ export default async function PublicReportPage({
               currency={report.summary.currency}
               recommendations={report.recommendations}
             />
-            <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
+            <section className="print-avoid-break print-compact rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
               <h2 className="text-lg font-semibold tracking-tight">Portfolio insights</h2>
               <div className="mt-4 space-y-4">
                 {insights.map((i) => (
-                  <div key={i.id} className="rounded-xl bg-zinc-50 p-4 dark:bg-black/30">
+                  <div key={i.id} className="print-avoid-break rounded-xl bg-zinc-50 p-4 dark:bg-black/30">
                     <div className="text-sm font-semibold">{i.title}</div>
                     <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
                       {i.detail}

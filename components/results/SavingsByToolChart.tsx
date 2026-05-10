@@ -34,7 +34,7 @@ export function SavingsByToolChart({
 
   if (!rows.length) {
     return (
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
+      <section className="print-avoid-break print-compact rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
         <h2 className="text-lg font-semibold tracking-tight">Savings by tool</h2>
         <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">
           No major savings drivers detected.
@@ -47,7 +47,7 @@ export function SavingsByToolChart({
 
   return (
     <section
-      className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5"
+      className="print-avoid-break print-compact rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5"
       aria-label="Savings by tool chart"
     >
       <h2 className="text-lg font-semibold tracking-tight">Savings by tool</h2>

@@ -17,7 +17,7 @@ export function RecommendationCard({
 
   return (
     <article
-      className={`rounded-3xl border bg-white p-5 shadow-sm dark:bg-white/5 sm:p-6 ${
+      className={`print-avoid-break print-compact rounded-3xl border bg-white p-5 shadow-sm dark:bg-white/5 sm:p-6 ${
         emphasize
           ? "border-zinc-900 ring-1 ring-zinc-900/10 dark:border-white/30 dark:ring-white/10"
           : "border-zinc-200 dark:border-white/10"

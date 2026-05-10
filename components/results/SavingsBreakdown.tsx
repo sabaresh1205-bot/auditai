@@ -23,7 +23,7 @@ export function SavingsBreakdown({
 
   if (positive.length === 0) {
     return (
-      <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5 sm:p-7">
+      <section className="print-avoid-break print-compact rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5 sm:p-7">
         <h2 className="text-lg font-semibold tracking-tight">Savings breakdown</h2>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
           No material savings surfaced from these inputs—you can still export or share once a link is ready.
@@ -33,7 +33,7 @@ export function SavingsBreakdown({
   }
 
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5 sm:p-7">
+    <section className="print-avoid-break print-compact rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5 sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Savings breakdown</h2>
