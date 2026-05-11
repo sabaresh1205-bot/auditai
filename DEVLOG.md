@@ -1,161 +1,119 @@
-# Development Log (AuditAI)
+Day 1 — 2026-05-07
 
-This devlog is an engineering-focused reconstruction of the work needed to reach the current implemented architecture and MVP behavior.
+**Hours worked:** 5
 
----
+**What I did:**  
 
-## Day 1 — Deterministic audit engine foundation
+I started the AuditAI project setup using Next.js, TypeScript, and Tailwind CSS. I understood the assignment requirements and planned the app flow: landing page, audit form, results page, lead capture, shareable report, and documentation. I also created the first structure for the project and started with the basic UI direction.
 
-**Hours worked:** 5.5  
-**Completed tasks:**
-- Implemented the core deterministic audit engine (`lib/audit/engine.ts`) as pure functions.
-- Added deterministic recommendation selection:
-  - de-duplication by `(toolId, type, recommendedAction)`
-  - stable “one recommendation per tool” selection using a fixed precedence ordering.
-- Sketched the business-rule approach by splitting logic into `lib/audit/rules.ts` and a pricing catalog (`lib/audit/pricing.ts`) used only for numeric target spend.
+**What I learned:**  
 
-**Blockers / challenges:**
-- Avoiding accidental non-determinism (object iteration order, unstable sorting) so outputs remain stable for the same input.
+I learned that this assignment is not just about coding. It checks product thinking, engineering discipline, documentation, and whether the app works end-to-end.
 
-**Decisions made:**
-- Keep the savings math entirely rule-based and computed locally in the browser.
-- Use deterministic tie-breakers (priority → estimated savings → recommended action/tool name).
+**Blockers / what I'm stuck on:**  
 
-**Lessons learned:**
-- Determinism is easiest when the engine is pure and when sorting/tie-breaking rules are explicit.
+The main blocker was understanding the full scope because the assignment has both engineering and entrepreneurial requirements.
 
-**Next-day plan:**
-- Add the first set of deterministic rules (overkill plan detection, cost-per-seat, redundant tools).
-- Create baseline Vitest tests that lock expected behavior.
+**Plan for tomorrow:**  
 
----
+Build the audit input form and start defining the deterministic audit engine.
 
-## Day 2 — Implement core rules + deterministic test coverage
+Day 2 — 2026-05-08
 
-**Hours worked:** 6  
-**Completed tasks:**
-- Added rule implementations in `lib/audit/rules.ts` (e.g., overkill plan detection, cost-per-seat, redundant tool detection).
-- Implemented deterministic “honesty” behaviors:
-  - when no savings apply, produce `NO_CHANGE` rather than inventing opportunities.
-  - only positive savings contribute to totals.
-- Added initial Vitest suite (`auditai/tests/audit/*.test.ts`) covering:
-  - overkill plan downgrades
-  - redundancy consolidation
-  - API spend thresholds
-  - edge cases (zero spend, empty tool list, duplicates).
+**Hours worked:** 6
 
-**Blockers / challenges:**
-- Modeling savings so they never exceed the current spend (and never go negative).
+**What I did:**  
 
-**Decisions made:**
-- Centralize numeric rounding and clamp behavior in shared helpers (to keep all rules consistent).
+I built the audit form with fields for team size, primary use case, AI tools, plan type, monthly spend, and number of seats. I added add/remove tool rows and form persistence across reloads. I also started implementing the audit engine structure.
 
-**Lessons learned:**
-- Tests are most valuable when they encode business intent (“don’t invent savings”) rather than just snapshots.
+**What I learned:**  
 
-**Next-day plan:**
-- Build the UI flow that wires the engine output into persistence and results presentation.
+I learned that the input form must be simple and clear because users need to reach the results quickly. If the form is confusing, users may not complete the audit.
 
----
+**Blockers / what I'm stuck on:**  
 
-## Day 3 — UI flow + Supabase persistence (reports)
+I forgot to check the git distinct-days requirement earlier using `git log --pretty=format:"%ad" --date=short | sort -u | wc -l`. Because of that, I decided not to rush-submit immediately and planned to continue improving the project properly before submission.
 
-**Hours worked:** 4.5  
-**Completed tasks:**
-- Implemented `AuditForm` (`components/audit/AuditForm.tsx`) with input validation and local report generation.
-- Added client state + persistence context (`contexts/AuditReportContext.tsx`) backed by localStorage.
-- Implemented report persistence API:
-  - `POST /api/reports` inserts into `public.audit_reports`
-  - route returns `{ id, createdAt }`.
-- Added the public report page:
-  - `app/report/[id]/page.tsx` loads by `is_public = true` and renders deterministic recommendations + portfolio insights.
+**Plan for tomorrow:**  
 
-**Blockers / challenges:**
-- Ensuring “shareable report creation” runs once per audit payload even under StrictMode rerenders.
+Finish deterministic audit rules and add automated tests for the audit engine.
 
-**Decisions made:**
-- Use deterministic localStorage-backed idempotency keys (`buildPersistKey`) plus a `useRef` guard (`persistAttemptedForKeyRef`) on the results page.
+Day 3 — 2026-05-09
 
-**Lessons learned:**
-- Idempotency matters even in small apps because React rerenders can easily duplicate side effects.
+**Hours worked:** 6
 
-**Next-day plan:**
-- Add optional AI executive summary generation and isolate it from numeric savings logic.
+**What I did:**  
 
----
+I implemented the deterministic audit engine. I added rules for overkill plans, redundant AI tools, high API spend, credit opportunity, and no-change cases. I also added recommendation types, confidence, severity, impact text, and non-stacking savings logic so the same tool does not produce unrealistic duplicate savings.
 
-## Day 4 — AI executive summary (isolated) + deterministic fallback
+**What I learned:**  
 
-**Hours worked:** 5  
-**Completed tasks:**
-- Implemented `POST /api/summary` and `generateAuditSummary()`:
-  - builds prompt from deterministic top recommendations (`lib/ai/prompts.ts`)
-  - calls OpenAI by default, with Anthropic supported by code
-  - sanitizes and clamps output (`sanitizeSummaryText`, word counting/clamping)
-  - falls back to `fallbackSummary()` when AI is unavailable or output is invalid.
-- Added AI summary caching in the results page via localStorage keyed by a deterministic hash.
-- Added the `AISummaryCard` UI with loading/error/retry states.
+I learned that savings logic must be explainable and conservative. It is better to show no savings than to manufacture fake recommendations.
 
-**Blockers / challenges:**
-- Preventing “LLM output drift” from breaking UX (empty output, very short outputs, accidental markup).
+**Blockers / what I'm stuck on:**  
 
-**Decisions made:**
-- Treat AI as a “best-effort narrative layer” only; numeric savings remain deterministic.
+Some test expectations needed adjustment because more than one rule could affect totals. I fixed this by keeping deterministic precedence and validating the final selected recommendations.
 
-**Lessons learned:**
-- Output constraints + deterministic fallback are essential for predictable user experience.
+**Plan for tomorrow:**  
 
-**Next-day plan:**
-- Implement lead capture and Supabase schema/RLS alignment for MVP usage.
+Build the results page and make the audit output easy to understand visually.
 
----
+Day 4 — 2026-05-10
 
-## Day 5 — Lead capture, spam protection, and RLS troubleshooting
+**Hours worked:** 6
 
-**Hours worked:** 6  
-**Completed tasks:**
-- Implemented `LeadCaptureForm` that posts to `POST /api/leads` with:
-  - a hidden honeypot field (`honey`)
-  - client-side retry cooldown and session de-dupe using `sessionStorage`
-  - server-side cooldown (`COOLDOWN_MS = 8000`)
-- Implemented the `POST /api/leads` route:
-  - validates payload with Zod (`leadSubmissionSchema`)
-  - checks honey and cooldown before inserting.
-- Added `supabase/schema.sql` with tables and RLS policies for leads and audit reports.
-- Added clearer error handling around RLS failures and Supabase configuration.
+**What I did:**  
 
-**Blockers / challenges:**
-- Supabase Row Level Security policy mismatch: even when the schema file was updated, inserts still failed until the policy matched the actual role used by the request.
+I built the results page with total monthly savings, annual savings, recommendation cards, AI summary card, savings breakdown, benchmark mode, and savings-by-tool chart. I also added the public report page and report persistence using Supabase.
 
-**Decisions made:**
-- Keep leads insertion as MVP-only, but make failure modes explicit (error codes and actionable messages).
-- Allow optional service-role bypass (`SUPABASE_SERVICE_ROLE_KEY`) for server-side inserts when configured.
+**What I learned:**  
 
-**Lessons learned:**
-- “Schema exists” is not enough; RLS role/policy correctness must be validated in the target Supabase project.
+I learned that the results page is the most important screen because it is the part users will screenshot and share. Clear visual hierarchy matters more than showing too much text.
 
-**Next-day plan:**
-- Clean up UI correctness issues (hydration mismatches) and ensure the app stays stable in production-like rendering.
+**Blockers / what I'm stuck on:**  
 
----
+I had to prevent duplicate report saves when the results page refreshed or re-rendered.
 
-## Day 6 — Stabilize client rendering and finalize docs-ready architecture
+**Plan for tomorrow:**  
 
-**Hours worked:** 3.5  
-**Completed tasks:**
-- Fixed a hydration mismatch caused by localStorage reads during the initial render.
-- Adjusted the storage hook to initialize safely and hydrate in `useEffect`.
-- Updated the audit context hydration state to avoid server/client markup divergence.
+Add lead capture, transactional email, Open Graph metadata, and production-ready sharing behavior.
 
-**Blockers / challenges:**
-- React hydration errors are noisy and can hide real issues during development.
+Day 5 — 2026-05-11
 
-**Decisions made:**
-- Centralize “read localStorage only after mount” behavior in `useLocalStorageJson` to prevent repeat issues.
+**Hours worked:** 7
 
-**Lessons learned:**
-- Hydration mismatches are best solved by eliminating server/client branching and deferring browser-only reads.
+**What I did:**  
 
-**Next-day plan:**
-- Add/expand documentation (README, architecture, prompts, testing philosophy, and go-to-market narrative) so the implementation is easier to maintain.
+I added Supabase storage for reports and leads. I implemented lead capture after the audit result, Resend transactional email, honeypot and cooldown abuse protection, shareable public report URLs, Open Graph metadata, and the high-savings Credex consultation CTA. I also tested the live email flow.
 
+**What I learned:**  
+
+I learned that backend setup is not only about writing API routes. Environment variables, Supabase RLS, service-role keys, and deployment configuration must be handled carefully.
+
+**Blockers / what I'm stuck on:**  
+
+Lead capture worked locally but initially failed in production because of Supabase RLS. I fixed it by safely configuring the service-role key in Vercel.
+
+**Plan for tomorrow:**  
+
+Complete final UI polish, update documentation, add screenshots, verify deployment, and submit the project.
+
+Day 6 — 2026-05-12
+
+**Hours worked:** 2
+
+**What I did:**  
+
+I completed final UI polish across the landing page, audit form, results page, public report page, and embed page. I added PDF export, benchmark mode, an embeddable widget, and a savings-by-tool chart. I ran Lighthouse and verified the app met the required scores. I also updated documentation, tested the deployed app, checked email delivery, and prepared the final submission.
+
+**What I learned:**  
+
+I learned that final polish is mostly about removing friction: clearer copy, cleaner spacing, better report layout, and making sure every important user flow works after deployment.
+
+**Blockers / what I'm stuck on:**  
+
+No major blocker at this stage. The remaining work was mainly final verification and making sure all assignment requirements were satisfied.
+
+**Plan for tomorrow:**  
+
+Submission day — no further development planned.

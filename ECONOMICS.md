@@ -1,111 +1,96 @@
-# Economics
+# [ECONOMICS.md](http://ECONOMICS.md)
 
-Spreadsheet-style model for a **B2B lead-generation** motion: free audit → shareable report → email lead → human consultation / paid services. Numbers are **assumptions** for planning—replace with your funnel data after 30 days of traffic.
+## 1. What is a converted lead worth to Credex?
 
----
+A converted lead means a startup completes the audit, books a Credex consultation, and buys discounted AI credits.
 
-## Unit definitions
+Assumption:
 
-| Symbol | Meaning |
-| --- | --- |
-| **V** | Monthly unique visitors (landing + `/audit`) |
-| **A** | Audits completed (reach `/results` with deterministic output) |
-| **P** | Persisted public reports (`POST /api/reports` **201**) |
-| **L** | Leads captured (`POST /api/leads` **201**) |
-| **C** | Paid consultations closed (human sales) |
+- Average qualified startup AI spend: **$1,000/month**
 
----
+- Annual AI spend: **$12,000**
 
-## Conversion funnel (illustrative)
+- Credex margin assumption: **10%**
 
-Plausible **early** funnel (tune with real analytics):
+Math:
 
-| Step | Rate | Formula |
-| --- | ---: | --- |
-| Visit → Audit start | 35% | A = 0.35 × V |
-| Audit → Persist report | 18% | P = 0.18 × A |
-| Persist → Lead | 10% | L = 0.10 × P |
-| Lead → Consult booked | 8% | Consults = 0.08 × L |
-| Consult → Close (services) | 25% | C = 0.25 × Consults |
+$12,000 × 10% = $1,200/year
 
-**Example:** V = 10,000 / month  
-- A = 3,500  
-- P = 630  
-- L = 63  
-- Consults ≈ 5  
-- C ≈ 1.25 **new paying engagements / month** at this stage
+
+
+## 2. What is CAC at each channel from the GTM plan?
+
+Estimated CAC means the cost to get one qualified lead.
+
+
+| Channel                    | Estimated CAC | Reason                                      |
+| -------------------------- | ------------- | ------------------------------------------- |
+| Founder communities        | $0–$20        | Mostly manual posting and replies           |
+| LinkedIn / X outreach      | $10–$40       | Direct founder/CTO outreach                 |
+| SaaS / Indie Hacker groups | $0–$25        | Organic community distribution              |
+| Embedded widget partners   | $20–$60       | Time cost to place widget in useful content |
+
+
+At MVP stage, organic channels are better than paid ads because this product needs trust.
 
 ---
 
-## CAC assumptions by channel (rough)
+## 3. What conversion rate makes this profitable?
 
-| Channel | Blended CAC to **persisted report** | Notes |
-| --- | ---: | --- |
-| Organic community / founder content | **$15–$40** | Time-heavy; cash-light. |
-| LinkedIn organic | **$20–$50** | If boosted, add spend / P. |
-| Cold outbound (tools + labor) | **$80–$200** | Includes list + hourly cost amortized. |
-| Paid search (later) | **$120–$350** | Competitive keywords; not MVP-first. |
+Example funnel:
 
-**CAC to lead** ≈ CAC_report ÷ (lead rate from report). At 10% lead rate, multiply by ~10.
+```
+100 audits completed
+→ 5 Credex consultations booked
+→ 1 credit purchase
+```
 
----
+That means:
 
-## Estimated lead value (consulting path)
+-   
+Audit completed → consultation booked: **5%**  
 
-Assume:
+-   
+Consultation booked → credit purchase: **20%**  
 
-- **Consultation fee:** $800 (90 min deep dive)
-- **Win rate to implementation project:** 25%
-- **Project margin:** $6,000 contribution margin per win (illustrative 2-week engagement)
 
-**Expected value per booked consult:**  
-0.75 × $800 + 0.25 × ($800 + $6,000) = $600 + $1,700 = **$2,300** (illustrative)
+If one converted customer is worth around **$1,200/year**, then 100 completed audits can create around **$1,200/year** in value.
 
-**Expected value per lead** (8% consult booking):  
-0.08 × $2,300 ≈ **$184 / lead** (order-of-magnitude; sensitivity analysis belongs in a sheet)
+So the tool is profitable if Credex can generate 100 completed audits for less than **$1,200**.
 
 ---
 
-## Monthly COGS (MVP scale)
+## 4. What would have to be true for this tool to drive $1M ARR in 18 months?
 
-| Line item | Range |
-| --- | ---: |
-| Hosting (Vercel/similar) | $20–$80 |
-| Supabase | $25–$150 |
-| Resend email | $0–$40 |
-| LLM summaries (bounded) | $30–$400 |
-| **Total** | **$75–$670** |
+If one converted customer is worth **$1,200/year**:
 
-LLM cost scales with **summary calls**; client caching reduces repeat calls.
+```
+$1,000,000 / $1,200 = about 834 customers
+```
 
----
+If larger customers are worth **$5,000/year**:
 
-## Path to **$1M ARR** (illustrative)
+```
+$1,000,000 / $5,000 = 200 customers
+```
 
-**Interpretation:** ARR here means **revenue from AuditAI-adjacent services** (consulting + implementation), not ARR from the free web app alone.
-
-**Scenario math:**
-
-- Target **$1,000,000 ARR** ≈ **$83,333 MRR**
-- If **average contract** = $12,000/year ACV (SMB advisory + setup), need **~83 customers** active or **~7 new / month** with churn modeled separately.
-- If **average project** = $8,000 one-time with 40% repeat annually, blend into a cohort model—in a spreadsheet, model **leads → consults → wins** explicitly.
-
-**Bridge from product funnel:**
-
-- Require **L** leads/month such that:  
-  `L × consult_rate × close_rate × ACV/12 ≈ MRR_target`  
-- Example: consult_rate 8%, close 25%, ACV $12k → each lead yields ~`0.08 × 0.25 × $1k` = **$20 MRR-equivalent** at steady state (illustrative).  
-  Then **L ≈ 4,200/month** for $83k MRR from that channel alone—shows why **higher ACV or partner distribution** must enter before pure PLG carries $1M.
-
-**Realistic combo:** raise ACV (enterprise advisory), add **partner channel** (fractional CFO firms), and keep AuditAI as **top-of-funnel proof**.
+So AuditAI must attract higher-spend teams, especially teams saving more than **$500/month**, and convert them into Credex credit customers.
 
 ---
 
-## What to measure first
+## 5. What numbers should Credex measure first?
 
-1. **P / A** — Is the report worth saving?
-2. **L / P** — Is the artifact worth leaving an email?
-3. **Summary `source: ai` vs `fallback` rate** — LLM budget control.
-4. **Cost per P** by channel — replaces vanity traffic metrics.
+Credex should measure:
 
-This document is **financially reasoned but assumption-driven**—export the formulas to Google Sheets and replace rates monthly.
+- audit completion rate  
+
+- email capture rate  
+
+- consultation click rate  
+
+- consultation-to-purchase rate  
+
+- average annual margin per converted customer  
+
+
+These numbers show whether AuditAI is only a useful free tool or a real revenue channel for Credex.

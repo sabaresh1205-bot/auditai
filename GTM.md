@@ -1,86 +1,80 @@
-# Go-to-Market (GTM)
+ [GTM.md](http://GTM.md)
 
-AuditAI is a **no-login, deterministic AI spend audit** with optional narrative summary, shareable `/report/[id]` links, and email capture on `/results`. This GTM plan targets **operators who already feel billing pain**—not hobbyists browsing for “AI tools.”
+Exact target user
 
----
+AuditAI is for **Founder-CTOs and Heads of Engineering at seed to Series A B2B SaaS companies with 10–80 employees**.
 
-## Extremely specific ICP
+They usually have teams using tools like Cursor, GitHub Copilot, ChatGPT Team, Claude Team, and OpenAI/Anthropic APIs, but no one has clearly checked whether the team is overspending.
 
-**Primary (first 500 conversations):**
 
-- **Seed–Series A B2B SaaS** in the US/Canada/UK, **15–80 employees**, building with AI daily.
-- **Buyer / champion:** Founder–CTO, Head of Engineering, or a **finance-forward ops person** asked to “get AI spend under control.”
-- **Stack signal:** At least **two** of: Cursor or Copilot, **and** ChatGPT Team/Claude Team/Gemini workspace, **and/or** non-trivial OpenAI or Anthropic API bills.
-- **Pain signal:** Expenses sit across **corporate card + engineering invoices**; nobody owns a single “AI budget line.”
 
-**Secondary:**
+What they search or read before using this
 
-- **AI-native agencies / dev shops** (10–40 people) billing tools to clients informally—high overlap, high embarrassment when redundancy is obvious.
+They may search things like:
 
-**Non-target for now:** enterprises with centralized IT procurement (long cycles) unless inbound.
+- Cursor vs GitHub Copilot pricing
+-  ChatGPT Team cost
+- reduce OpenAI API bill
+- AI tools for engineering team
+- why is our AI bill so high?
 
----
+They may also see posts on X/LinkedIn about teams spending too much on AI subscriptions and want a quick second opinion.
 
-## Unfair distribution advantage
 
-1. **Shareable artifact:** The public report is a **forwardable internal memo**—the champion does not need to explain the methodology; the URL does.
-2. **Deterministic repeatability:** Two engineers running the same inputs get the same numbers—reduces “black box” objections in Slack debates.
-3. **Fast time-to-value:** Sub-10-minute path from stack entry to share link beats procurement-heavy “spend management” demos.
 
----
+ Where they hang out online
 
-## Acquisition channels (realistic, ordered)
+Good channels to reach them:
 
-| Channel | Tactic | Why it fits |
-| --- | --- | --- |
-| **Founder / operator communities** | Post *sanitized before/after savings* + link pattern (not screenshots of private data) | Trust + specificity beat ads. |
-| **Engineering Slack groups** | “We duplicated Cursor+ChatGPT—here’s what a rule-based audit claims” | Engineers share tools; controversy drives clicks. |
-| **LinkedIn** | Short posts: **one rule** (e.g., redundancy) + CTA to free audit | Algorithm rewards concrete numbers. |
-| **Cold outbound (light)** | 40 emails/week to CTOs at companies hiring “AI engineer” roles | Hiring signal ⇒ AI tooling sprawl. |
-| **SEO (later)** | Long-tail: “Cursor vs Copilot cost,” “multiple ChatGPT accounts” | Compounds after first proofs. |
+-  Indie Hackers
+- r/SaaS
 
-**Communities to seed first (examples):** Indie Hackers (founder threads), relevant **Slack workspaces** for YC-backed batches, **r/SaaS** and **r/startups** (value posts, not spam), **Women in SaaS / Ops** communities where budget owners congregate, **local startup meetups** with demo table.
+- r/startups
+-  Hacker News launch/show threads
+-  X/Twitter founder and devtool circles
+-  LinkedIn posts from CTOs and startup operators
+-  Slack/Discord groups for startup founders, indie hackers, and engineering leaders
 
----
 
-## 30-day execution plan (concrete)
 
-**Days 1–7 — Proof assets**
+ First 100 users in 30 days with $0 budget
 
-- Run **20 live audits** with friendly teams; capture **5 anonymized stories** (inputs abstracted, savings rounded).
-- Publish **one** canonical post: “How we calculate redundancy savings (deterministic rules, no LLM math).”
+I would start with direct outreach and specific community posts, not generic marketing.
 
-**Days 8–14 — Distribution sprints**
+Plan:
 
-- **3 community posts** + **2 LinkedIn posts**, each with one specific rule explanation.
-- **30 targeted outbounds** to CTOs at companies with public “AI” job postings.
+-  Message 30 Founder-CTOs or engineering leads with a short note and free audit link.
+-  Post 3 useful examples showing common AI spend mistakes, such as duplicate ChatGPT + Claude subscriptions.
+- Ask early users to share their public report link internally with their team.
+-  Share one short teardown: “How a small team could save $X/month on AI tools.”
+-  Use the embeddable widget in one blog-style post to let users try the audit directly.
 
-**Days 15–21 — Share loop**
+Goal for 30 days:
 
-- Ask every user: “Who else needs this URL?” — measure **forwards per report**.
-- Add **one** case study page (static) from the best anonymized audit.
+-  300 audit starts
+- 75 completed reports
+-  25 email leads
+-  5 high-savings consultation clicks
 
-**Days 22–30 — Double down**
 
-- Re-run the **best-performing channel only** (community vs LinkedIn vs outbound).
-- Cut the worst channel without guilt.
 
-**Traction assumptions (honest):** **300–800** audit starts, **40–120** persisted public reports, **15–40** emails captured in 30 days if distribution is consistent—not if the product sits behind a single launch post.
+Unfair distribution channel
 
----
+Credex’s unfair advantage is that it already operates in the AI infrastructure credits market.
 
-## Positioning (one line)
+That means Credex can use real customer conversations, pricing knowledge, and credit availability to make the audit more useful than a generic calculator.
 
-**“A deterministic AI stack audit you can forward to finance—no login.”**
+The tool becomes both a free product and a lead-generation asset.
 
-Avoid claiming “we access your invoices”; the product is **self-reported spend**, honestly.
 
----
 
-## Why this beats generic “AI cost calculators”
+Week-1 traction target
 
-Most calculators output a **single number** with opaque assumptions. AuditAI outputs **actions** (downgrade, remove redundant assistant, seat correction) tied to explicit rules—closer to how an operator actually fixes the problem.
+If this works, week 1 should show:
 
-Benchmark mode adds an extra deterministic context signal (spend-per-developer vs static internal team-size ranges) to help users self-calibrate without claiming live market intelligence.
+-  50–100 audit starts
+-  15–25 completed reports
+-  5–10 email captures
+-  1–3 high-savings consultation clicks
 
-An iframe-first `/embed` route provides a low-friction distribution surface for blogs and partner content while preserving deterministic, transparent logic.
+The key signal is not traffic. The key signal is whether users complete the audit and share the report.

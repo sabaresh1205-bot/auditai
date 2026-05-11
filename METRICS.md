@@ -1,78 +1,75 @@
-# Metrics
+#[METRICS.md](http://METRICS.md)
 
-AuditAI is a **B2B lead-generation and decision-support** product—not a social consumer app. Metrics should track **artifact creation, sharing, and qualified interest**, not vanity pageviews alone.
+ 1. What is the North Star metric?
 
----
+The North Star metric is:
 
-## North Star metric
+**Completed audits that generate a shareable report.**
 
-**Persisted public reports per week** (`POST /api/reports` returning **201**, `is_public = true`)
+This is better than DAU because AuditAI is not a daily-use app. A user may only need it when reviewing AI tool spend.
 
-**Why:** A saved report is the **shareable decision artifact**—the moment a team can forward a URL to finance or leadership. Everything upstream (visits, audits) is diagnostic; everything downstream (leads, consults) is conversion.
+A completed audit with a shareable report means the user reached the value moment: they entered their stack, received recommendations, and created something they can send to a founder, finance person, or engineering lead.
 
----
 
-## Three input metrics (leading indicators)
 
-These feed the north star and surface funnel breakage early:
+2. What are the 3 input metrics?
 
-1. **Audit completion rate**  
-   - **Definition:** Sessions that run `generateAuditReport` and land on `/results` ÷ sessions that start `/audit` with intent (e.g., first field interaction or “Run audit” click—pick one instrumentation definition and keep it stable).  
-   - **Why:** Measures form friction and perceived value of starting.
+ 1. Audit completion rate
 
-2. **Persistence success rate**  
-   - **Definition:** `201` responses from `POST /api/reports` ÷ attempts (client-side retries deduped if possible).  
-   - **Why:** Separates “liked results” from **technical/config failure** (Supabase, RLS, network).
+This measures how many users who start the audit actually finish it.
 
-3. **Qualified lead rate (from persisted reports)**  
-   - **Definition:** `POST /api/leads` **201** ÷ persisted reports in the same cohort window.  
-   - **Why:** Measures whether the **artifact + copy** compels a low-friction opt-in.
-4. **Benchmark mode distribution (diagnostic)**  
-   - **Definition:** share of reports in `BELOW_AVERAGE` / `AROUND_AVERAGE` / `ABOVE_AVERAGE` from deterministic benchmark buckets.
-   - **Why:** helps product messaging and consultation targeting; these are static internal references, not live market signals.
-5. **Embed completion rate (bonus)**  
-   - **Definition:** embed sessions that click “Run audit” and render compact deterministic summary.
-   - **Why:** measures partner/blog embed usefulness without conflating with full-app persistence/lead funnels.
+Audit completion rate = completed audits / audit starts
 
----
 
-## Instrumentation priorities (practical order)
 
-| Priority | Event / metric | Implementation note |
-| --- | --- | --- |
-| P0 | Report persisted (201) | Server log + optional `report_id` hash (no PII). |
-| P1 | Audit completed (client) | Single analytics event after navigation to `/results`. |
-| P2 | Lead submitted (201) | Server log; never log raw email in plaintext. |
-| P3 | Share link copied | Client event on successful clipboard write. |
-| P4 | AI summary source | Count `source: ai` vs `fallback` from `/api/summary` responses (aggregate). |
+### 2. Email capture rate
 
-Use **one** product analytics tool or structured logs first—dual tracking doubles failure modes.
+This measures how many users submit their email after seeing the report.
+
+```
+Email capture rate = emails captured / completed audits
+```
+
+
+
+### 3. Consultation click rate
+
+This measures how many high-savings users click the Credex consultation CTA.
+
+```
+Consultation click rate = consultation clicks / high-savings audits
+```
+
+This is important because Credex cares about qualified leads, not just traffic.
 
 ---
 
-## Pivot threshold (example policy)
+## 3. What would I instrument first?
 
-**Review positioning if for 4 consecutive weeks:**
+I would instrument:
 
-- **Persistence rate** under 8% of audit completions **and**  
-- **Lead rate** under 2% of persisted reports **and**  
-- Qualitative feedback says “not actionable”
+- audit started  
 
-**Interpretation:** Users may not trust self-reported inputs, may not need sharing, or the ICP is wrong—**do not** scale spend before diagnosing which leg failed.
+- audit completed  
+
+- report saved  
+
+- email submitted  
+
+- consultation CTA clicked  
+
+- public report viewed  
+
+- PDF exported
 
 ---
 
-## Supporting diagnostics (secondary)
+## 4. What number triggers a pivot decision?
 
-- AI summary **fallback rate** (high fallback ⇒ fix provider reliability or expectations).
-- **Error rate** on `/api/leads` and `/api/reports` by error code (RLS vs validation vs 5xx).
-- **Time-to-persist** (results paint → first successful 201) for performance SLAs.
+If fewer than **10% of completed audits submit an email**, I would revisit the results page and lead capture copy.
 
----
+If fewer than **2% of high-savings audits click the Credex consultation CTA**, I would change the CTA placement, wording, or threshold.
 
-## Retention (no-login MVP)
+If fewer than **40% of users who start the audit complete it**, I would simplify the audit form.
 
-Without accounts, use **operational proxies**:
-
-- Repeat **persisted reports** from the same **hashed network fingerprint** or **company email domain** (privacy-sensitive—only with consent).
-- **Return visits** to `/report/[id]` (server logs) as weak sharing signal.
+The main goal is not traffic. The main goal is turning completed audits into qualified leads.

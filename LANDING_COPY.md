@@ -1,57 +1,63 @@
-# Landing Copy
+ LANDING_[COPY.md](http://COPY.md)
 
-Aligned with the live landing (`app/page.tsx`): deterministic AI spend auditing, no account required, **Run Free Audit** CTAs.
+ 1.Hero headline
 
----
+Stop overpaying for AI tools.
 
-## Hero
 
-- **Headline (6 words):** Stop overpaying for AI tools.
-- **Subheadline (24 words):** Transparent rule-based audit of plan fit, overlap, seats, and spend—exportable savings report in minutes, optional AI summary with deterministic fallback if the model is unavailable.
-- **Primary CTA:** Run Free Audit
-- **Secondary line:** No account required
 
----
+1. Subheadline
 
-## Eyebrow (optional chip)
+Audit your AI stack, find overspending, and get a shareable savings report in minutes.
 
-Deterministic AI spend audit
 
----
 
-## Mocked social proof (clearly labeled)
+1. Primary CTA
 
-> **[Mocked — illustrative only]**  
-> “Used AuditAI in a partner sync—finally had numbers we could agree on.”  
-> — **Jordan M., VP Engineering**, *Example SaaS Co. (fictional)*
+Run Free Audit
 
-> **[Mocked — illustrative only]**  
-> “Ran it before our Q3 budget lock; redundant assistants were obvious in the report.”  
-> — **Samira K., Finance & Ops**, *Placeholder Industries (fictional)*
 
-Do **not** present the above as real testimonials without replacing with verified quotes.
 
----
+1. Social proof block
 
-## FAQ (5)
+**Mocked social proof for landing page layout:**
 
-1. **Do I need an account?**  
-   No. Run the audit anonymously. Email is optional on the results page if you want follow-up.
+“AuditAI helped us spot duplicate AI subscriptions before our next billing cycle.”  
 
-2. **Are savings calculated by AI?**  
-   No. Recommendations and dollar totals come from **deterministic rules** in the audit engine. The optional executive summary uses an LLM for **wording only**, with a non-AI fallback.
+— Mocked quote from a startup engineering lead
 
-3. **What inputs do you need?**  
-   Team size, primary use case, currency, and each paid tool’s plan, seats, and monthly spend—**as you understand them today**.
+“Finally, a simple way to explain AI tool spend to finance.”  
 
-4. **How do shareable reports work?**  
-   After results load, the app can save a **public** report in our database and give you a `/report/[id]` link to share internally.
+— Mocked quote from a founder-operator
 
-5. **Will my stack look “bad” if we’re already efficient?**  
-   Not necessarily. The audit may show **no major savings** or **NO_CHANGE** recommendations—that’s an honest outcome, not a failure.
 
----
 
-## Voice
+1. FAQ
 
-Professional, direct, **no hype**. Lead with transparency: rules-based math, explicit pricing assumptions documented in-repo (`PRICING_DATA.md`).
+1. Do I need an account?
+
+No. You can run the audit without creating an account.
+
+
+
+2. Does AI calculate the savings?
+
+No. Savings are calculated by deterministic rules. AI is only used for the short executive summary.
+
+
+
+ 3. What tools can I audit?
+
+AuditAI supports common AI tools like Cursor, GitHub Copilot, ChatGPT, Claude, Gemini, OpenAI API, and Anthropic API.
+
+
+
+4. Can I share the report?
+
+Yes. Each audit can generate a public shareable report URL.
+
+
+
+5. What happens after I submit my email?
+
+You receive a confirmation email. For high-savings cases, Credex may reach out with optimization recommendations.

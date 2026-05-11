@@ -1,92 +1,71 @@
-# Reflection
+# R[EFLECTION.md](http://EFLECTION.md)
 
-## 1. What was the hardest technical problem, and how did you debug it?
+1. The hardest bug I hit this week, and how I debugged it
 
-The hardest problems sat at **integration boundaries**, not inside the pure audit math. Two stand out: **Supabase Row Level Security (RLS)** blocking inserts in some environments, and **React hydration** when browser-only storage participated in render.
+The hardest bug was Supabase Row Level Security blocking lead submissions after deployment. Locally, the form worked, but in production the email submit failed. First, I checked whether the frontend was sending the correct payload: email, company name, role, and team size. Then I checked the API route to confirm the request reached `/api/leads`.
 
-For RLS, the failure mode was a generic 500 or Postgres error message that did not spell out “policy.” I worked backward from the `insertLead` / report insert call sites, confirmed the service role vs anon client path in `tryCreateSupabaseAdminClient()`, and compared that to what `schema.sql` actually grants. The debugging loop was: reproduce locally with anon key only → read the exact error string → map it to “missing policy” vs “wrong column” vs “network.” That process is tedious but mechanical; the fix is almost always aligning **one** of: policy, key tier, or payload shape.
+My next hypothesis was that the database table existed, but the Supabase role did not have permission to insert. I verified the RLS policies and tested the difference between anon access and server-side service-role access. The fix was to configure the service-role key safely in Vercel so the backend could insert leads without exposing secrets to the client.
 
-One subtle trap: **the app can “work” locally with a service role key** while **staging fails on anon RLS**, which feels like a flaky deploy until you realize the environments are not equivalent. Documenting “required policies for anon inserts” next to `schema.sql` would have saved an hour; I ended up diffing policies against the error text instead.
+I also fixed form persistence by changing audit drafts from localStorage to sessionStorage. This kept refresh persistence but prevented old values from staying forever.
 
-For hydration, the bug pattern was “server rendered default, client immediately read storage and diverged.” The fix was to centralize storage reads behind **`useSyncExternalStore`**-style hooks so the server snapshot and first client snapshot match, then subscribe for updates. That turned an intermittent warning into a **designed** contract: default on SSR, hydrate, then sync.
 
-A secondary lesson: **client-only APIs** (`sessionStorage`, `clipboard`, `print`) must never gate first paint on their availability. Any “read storage in render without a safe snapshot” pattern will eventually break when React strict mode or SSR assumptions shift. The durable approach is: stable default → subscribe → re-render.
 
-**Rating (problem-solving): 8/10** — Integration debugging is slow but methodical; the gap is earlier investment in integration tests for routes.
+2. A decision I reversed mid-week, and what made me reverse it
 
----
+One decision I reversed was using AI for audit recommendations. At first, I thought the LLM could help make savings suggestions more personalized. But I realized this would make the audit unreliable because the same input could produce different recommendations.
 
-## 2. What was the most important architecture decision?
+I changed the architecture so the audit engine became fully deterministic. The engine now calculates savings, recommendation types, confidence, severity, and reasons using fixed rules. This made the output easier to test, explain, and defend.
 
-The most important decision was **deterministic-first audit output with an optional, isolated LLM narrative**. Concretely: `generateAuditReport()` and `lib/audit/rules.ts` own every dollar of `estimatedSavings` and every `RecommendationType`. The `/api/summary` route only **describes** that output; it never recomputes totals or invents new actions.
+AI is now used only for the executive summary. It explains the already-computed report in simple language, but it does not calculate money or decide recommendations. If the AI fails, the app uses a fallback summary based on the deterministic report.
 
-That decision traded “magic AI insights” for **auditability**: the same inputs must yield the same recommendations in CI, and product trust hinges on that. The LLM is a **presentation layer**—valuable for readability, but disposable thanks to `fallbackSummary()`.
+This decision made the project stronger because the financial logic stays predictable and the AI layer stays optional.
 
-The tradeoff is real: you cannot promise “the model will sound brilliant every time,” and you should not try. Instead you promise **repeatable math** and **bounded narrative**. For a founder selling into operators who forward reports internally, repeatability is the sharper wedge.
 
-**Reversed decision:** An earlier sketch assumed the LLM could “refine” savings numbers for nuance. That was reversed before implementation: any numeric post-processing by a model would break testability and blur accountability. Narrative-only won.
 
-Secondary benefits: **support and sales** can point to `rules.ts` and tests when challenged; **marketing** can claim repeatability; **engineering** can ship pricing catalog updates without retraining a model.
+3. What I would build in week 2 if I had it
 
-**Rating (architecture judgment): 9/10** — Correct for a compliance-minded B2B artifact; cost is that summaries feel less “creative.”
+If I had one more week, I would focus on reliability and measurement instead of adding many new features. First, I would add stronger server-side rate limiting for `/api/leads`, `/api/reports`, and `/api/summary`. The current honeypot and cooldown are useful for MVP abuse protection, but production traffic needs stronger limits.
 
----
+Second, I would improve logging. I would track report-save failures, lead submission failures, email sending errors, and AI fallback rates. This would make production issues easier to debug.
 
-## 3. What would you improve in the next week of work?
+Third, I would improve pricing maintenance. The current pricing assumptions are documented in `PRICING_DATA.md`, but AI tool pricing changes often, so I would create a regular process to verify official pricing pages.
 
-I would prioritize three items:
+Finally, I would add integration tests for API routes. The audit engine already has unit tests, but backend route tests would make the full system more reliable.
 
-1. **Route-level integration tests** (mock Supabase client) for `POST /api/reports` and `POST /api/leads` happy paths and RLS failure paths—Vitest already proves the engine; the next failure surface is HTTP + DB policy drift.
 
-2. **Structured logging** (JSON lines) around persistence and Resend failures, with **no PII in logs**—today `console.error` is enough for MVP but not for triage at scale.
 
-3. **Server-side rate limits** on lead submission keyed by IP + report id, keeping the honeypot and cooldown as defense-in-depth rather than the only wall.
+4. How I used AI tools
 
-I would *not* spend week two on new rules until observability proves which rules misfire in production.
+I used AI tools like Cursor and ChatGPT as assistants, not as replacements for understanding the code. I used them for scaffolding components, improving UI copy, reviewing documentation structure, and checking whether the project matched the assignment requirements.
 
-A pragmatic sequencing rule: **instrument before optimizing**. Without counts of `/api/reports` successes, fallback summary rate, and lead POST failures, any performance work is guesswork. The smallest useful dashboard might be five counters and a latency histogram for the three POST routes.
+I did not trust AI with the audit math. All savings rules, recommendation types, and totals are handled by deterministic code. After AI-assisted changes, I ran tests and manually reviewed important files.
 
-**Rating (execution focus): 7/10** — Clear backlog; needs real traffic to prioritize.
+One specific time AI was wrong was when it suggested a simpler storage sync using `useEffect`. That could have caused hydration issues in Next.js because server-rendered output and client-rendered output might not match. I caught this by reviewing the existing storage hook and kept the safer snapshot-based approach.
 
----
+The main lesson was that AI is useful for speed, but final decisions must come from code review, testing, and understanding the requirements.
 
-## 4. What did you learn about mixing deterministic systems with AI—and how did you actually use AI tools?
 
-**Deterministic systems fail visibly:** wrong rule → wrong number → unit test fails. **AI fails softly:** empty text, hedging, or plausible-sounding extra bullets. The lesson is that **constraints + validation + fallback** are not polish—they are part of the product contract.
 
-**AI tool usage (honest):** I used an LLM assistant for scaffolding (copy tone, doc outlines, TypeScript refactors) and to sanity-check edge cases in natural language. I did **not** allow generated code to touch savings formulas without reading `engine.ts` and running `npm test`.
+5. Self-rating
 
-**Example where AI was wrong:** A suggested “fix” for a storage hook used `useEffect` to sync localStorage into React state on mount. That pattern reintroduced the hydration class of bugs the app had just eliminated. It was caught by **re-reading the existing `useSyncExternalStore` approach** and rejecting the effect-based patch. The correct fix was extending the same external-store pattern to session storage, not adding effects.
+**Discipline — 8/10**  
 
-More broadly: **LLM prose drifts** even when numbers are fixed. That is why AuditAI clamps word count, strips markup, and replaces bad output with `fallbackSummary()`. The product lesson is not “never use AI”—it is **never let AI be the only line of defense** for user-visible claims that imply dollars.
+I worked step by step through the audit engine, UI, backend, email, testing, deployment, and documentation instead of trying to build everything at once.
 
-**Rating (AI hygiene): 8/10** — Good when treated as a junior pair programmer with mandatory tests.
+**Code quality — 8/10**  
 
----
+The project uses TypeScript, modular files, deterministic rules, validation, and tests. API integration tests could still be improved.
 
-## 5. Self-evaluation (strengths, gaps, numeric self-ratings)
+**Design sense — 7/10**  
 
-**Strengths**
+The UI is clean, responsive, and polished with a strong results page, benchmark card, savings chart, and PDF export. It could still be improved by a professional designer.
 
-- Deterministic core with **meaningful Vitest coverage** (overkill plans, redundancy, API spend, credit opportunity, optimized stack, edge cases, savings totals).
-- **Clear separation** between narrative AI and numeric audit.
-- **Shareable report + metadata** path that treats public URLs as first-class.
+**Problem-solving — 8/10**  
 
-**Gaps**
+I solved issues around Supabase RLS, Resend email, session storage, deployment variables, and print/PDF layout.
 
-- Production **abuse controls** are intentionally light; scaling users requires harder limits.
-- **Observability** is minimal; debugging production will need structured logs and dashboards.
-- **Pricing catalog** is static; real vendors move prices monthly.
+**Entrepreneurial thinking — 8/10**  
 
-**Self-ratings (1–10, with reason)**
+The project includes lead capture, shareable reports, Credex consultation CTA, benchmark mode, embeddable widget, pricing documentation, GTM, and economics thinking.
 
-| Area | Score | Why |
-| --- | ---: | --- |
-| Engineering rigor | 8 | Tests + typed engine; integration tests still thin. |
-| Product clarity | 8 | Honest about deterministic vs AI; some UX still MVP. |
-| Operational readiness | 6 | Logs/rate limits/alerting not yet “on-call ready.” |
-| Communication (docs) | 8 | Architecture and prompts explain trust boundaries. |
-
-**Overall: 7.5/10** — Strong submission for a constrained-time MVP; the next increment is operational hardening, not feature sprawl.
-
-If I were an external reviewer, I would ask one uncomfortable question: **“What breaks first at 100× traffic?”** Today the honest answer is **database write pressure and abuse on `/api/leads`**, not the audit engine. Naming that explicitly is more credible than pretending infinite scale.
+Overall, I would rate the project around **8/10**.

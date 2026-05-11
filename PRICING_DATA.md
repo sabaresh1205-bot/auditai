@@ -1,140 +1,115 @@
-# Pricing Data (Deterministic Assumptions)
+PRICING_[DATA.md](http://DATA.md)
 
-AuditAI uses deterministic, static pricing assumptions to estimate “target spend” when proposing:
+Pricing verified: **2026-05-09**
 
-- downgrades to a lower plan tier
-- cost-per-seat sanity checks
-- conservative savings caps (savings never exceed current spend and never go negative)
+All prices are static assumptions used by the AuditAI rule engine. Pricing can change, so these should be re-checked against official vendor pages before production use.
 
-The goal is consistency and auditability of the numeric recommendations, not perfect real-world billing accuracy.
 
-**Pricing can change over time and should be periodically re-verified against vendor pricing pages.**
 
----
+Cursor
 
-## Supported Tools
+Source: [https://cursor.com/pricing](https://cursor.com/pricing) — verified 2026-05-09
 
-### Tools supported in the UI (input options)
+- Pro: $20/user/month
 
-`components/audit/AuditForm.tsx` supports these `toolId` values:
+- Business: $40/user/month
 
-- `cursor`
-- `github_copilot`
-- `claude`
-- `chatgpt`
-- `gemini`
-- `perplexity`
-- `openai_api`
-- `anthropic_api`
-- `google_ai_studio_api`
-- `other` (requires a custom tool name)
+- Enterprise: $60/user/month
 
-### Tools supported by the pricing catalog (USD)
 
-`lib/audit/pricing.ts` contains numeric pricing only for this subset:
 
-- `cursor`
-- `github_copilot`
-- `chatgpt`
-- `claude`
-- `gemini`
-- `openai_api`
-- `anthropic_api`
+GitHub Copilot
 
-For toolIds not present in the pricing catalog (`perplexity`, `google_ai_studio_api`, `other`), rules that depend on catalog prices will skip target-spend calculations. In those cases, the engine may still produce `NO_CHANGE` or other non-pricing-driven recommendations.
+Source: [https://github.com/features/copilot/plans](https://github.com/features/copilot/plans) — verified 2026-05-09
 
----
+- Individual / Pro: $10/user/month
 
-## Official vendor pricing references
+- Business: $19/user/month
 
-All URLs below point to **vendor-hosted** pricing or plan information. Catalog rows were checked for alignment with `lib/audit/pricing.ts` on **2026-05-09** (submission week).
+- Enterprise: $39/user/month
 
-| Catalog tool | Official pricing / plans URL | Verified |
-| --- | --- | --- |
-| Cursor | [cursor.com/pricing](https://cursor.com/pricing) | 2026-05-09 |
-| GitHub Copilot | [github.com/features/copilot/plans](https://github.com/features/copilot/plans) | 2026-05-09 |
-| ChatGPT (consumer / team) | [openai.com/chatgpt/pricing](https://openai.com/chatgpt/pricing/) | 2026-05-09 |
-| Claude (consumer / team) | [anthropic.com/pricing](https://www.anthropic.com/pricing) | 2026-05-09 |
-| Gemini (Google AI / workspace plans) | [one.google.com — Google One plans (Gemini)](https://one.google.com/about/google-one-plans/) | 2026-05-09 |
-| OpenAI API | [openai.com/api/pricing](https://openai.com/api/pricing/) | 2026-05-09 |
-| Anthropic API | [anthropic.com/pricing](https://www.anthropic.com/pricing) (API section) | 2026-05-09 |
 
-### Assignment / roadmap tools (not in `lib/audit/pricing.ts` today)
 
-The Credex specification references **Windsurf** and **v0** as tools to trace. They are **not** modeled in `PRICING_USD` yet—no list prices are asserted here. Use only official pages when extending the catalog.
+ChatGPT
 
-| Product | Official pricing / plans URL | Verified |
-| --- | --- | --- |
-| Windsurf | [windsurf.com/pricing](https://windsurf.com/pricing) | 2026-05-09 |
-| v0 (Vercel) | [v0.dev/pricing](https://v0.dev/pricing) | 2026-05-09 |
+Source: [https://openai.com/chatgpt/pricing](https://openai.com/chatgpt/pricing) — verified 2026-05-09
 
----
+- Plus / Pro: $20/user/month
 
-## Pricing Assumptions (USD catalog)
+- Team: $30/user/month
 
-Catalog semantics:
+- Enterprise: $60/user/month assumption for audit modeling
 
-- Seat-based SaaS plan tiers define `monthlyPrice` as a **price per seat**.
-- API pay-as-you-go tools (`openai_api`, `anthropic_api`) use a pricing model where `monthlyPrice = 0` and spend optimizations come from usage-based rules (not fixed seat list prices).
-- The user’s entered `monthlySpend` is treated as the “current spend source of truth”.
-- Documented tiers below are **only** those present in `PRICING_USD` in `lib/audit/pricing.ts` (no extra plans are implied here).
 
-### Cursor
 
-- **Source:** [cursor.com/pricing](https://cursor.com/pricing) · **Verified:** 2026-05-09  
-- `pro`: $20/month per seat, intendedTeamSize `{ min: 1, max: 20 }`
-- `business`: $40/month per seat, intendedTeamSize `{ min: 10, max: 500 }`
-- `enterprise`: $60/month per seat, intendedTeamSize `{ min: 50, max: 100000 }`
+Claude
 
-### GitHub Copilot
+Source: [https://www.anthropic.com/pricing](https://www.anthropic.com/pricing) — verified 2026-05-09
 
-- **Source:** [github.com/features/copilot/plans](https://github.com/features/copilot/plans) · **Verified:** 2026-05-09  
-- `pro`: $10/month per seat, intendedTeamSize `{ min: 1, max: 10 }`
-- `business`: $19/month per seat, intendedTeamSize `{ min: 2, max: 5000 }`
-- `enterprise`: $39/month per seat, intendedTeamSize `{ min: 50, max: 100000 }`
+- Pro: $20/user/month
 
-### ChatGPT
+- Team: $30/user/month
 
-- **Source:** [openai.com/chatgpt/pricing](https://openai.com/chatgpt/pricing/) · **Verified:** 2026-05-09  
-- `pro`: $20/month per seat, intendedTeamSize `{ min: 1, max: 10 }`
-- `team`: $30/month per seat, intendedTeamSize `{ min: 5, max: 200 }`
-- `enterprise`: $60/month per seat, intendedTeamSize `{ min: 50, max: 100000 }`
+- Enterprise: $60/user/month assumption for audit modeling
 
-### Claude
 
-- **Source:** [anthropic.com/pricing](https://www.anthropic.com/pricing) · **Verified:** 2026-05-09  
-- `pro`: $20/month per seat, intendedTeamSize `{ min: 1, max: 10 }`
-- `team`: $30/month per seat, intendedTeamSize `{ min: 5, max: 200 }`
-- `enterprise`: $60/month per seat, intendedTeamSize `{ min: 50, max: 100000 }`
 
-### Gemini
+Gemini
 
-- **Source:** [one.google.com — Google One plans](https://one.google.com/about/google-one-plans/) (Gemini offering context) · **Verified:** 2026-05-09  
-- `pro`: $20/month per seat, intendedTeamSize `{ min: 1, max: 10 }`
-- `business`: $30/month per seat, intendedTeamSize `{ min: 2, max: 2000 }`
-- `enterprise`: $60/month per seat, intendedTeamSize `{ min: 50, max: 100000 }`
+Source: [https://one.google.com/about/plans](https://one.google.com/about/plans) — verified 2026-05-09
 
-### OpenAI API
+- Pro: $20/user/month assumption for audit modeling
 
-- **Source:** [openai.com/api/pricing](https://openai.com/api/pricing/) · **Verified:** 2026-05-09  
-- `api_payg`: `monthlyPrice = 0`, intendedTeamSize `{ min: 1, max: 100000 }`
+- Business: $30/user/month assumption for audit modeling
 
-### Anthropic API
+- Enterprise: $60/user/month assumption for audit modeling
 
-- **Source:** [anthropic.com/pricing](https://www.anthropic.com/pricing) · **Verified:** 2026-05-09  
-- `api_payg`: `monthlyPrice = 0`, intendedTeamSize `{ min: 1, max: 100000 }`
 
----
 
-## Limitations of Static Pricing
+ OpenAI API Direct
 
-1. **List price drift**
-   - SaaS vendors change pricing over time. Static catalog values can become outdated; re-check the official URLs above regularly.
-2. **Discounts and negotiated rates**
-   - Enterprise discounts, negotiated contracts, and volume pricing aren’t modeled.
-3. **Spend input quality**
-   - Numeric recommendations depend on the accuracy of `monthlySpend` entered by the user.
-4. **Incomplete catalog coverage**
-   - Tools like `perplexity`, `google_ai_studio_api`, and `other` are accepted as inputs, but numeric catalog-based rules skip where pricing data is missing.
-5. **API spend model is simplified**
-   - API tools do not use fixed seat list pricing (`monthlyPrice = 0`); API recommendations are derived from usage spend thresholds and conservative deterministic savings rates.
+Source: [https://openai.com/api/pricing](https://openai.com/api/pricing) — verified 2026-05-09
+
+- API direct: pay-as-you-go
+
+- AuditAI models fixed plan price as $0 and evaluates optimization based on entered monthly API spend.
+
+
+
+ Anthropic API Direct
+
+Source: [https://www.anthropic.com/pricing](https://www.anthropic.com/pricing) — verified 2026-05-09
+
+- API direct: pay-as-you-go
+
+- AuditAI models fixed plan price as $0 and evaluates optimization based on entered monthly API spend.
+
+
+
+Windsurf
+
+Source: [https://windsurf.com/pricing](https://windsurf.com/pricing) — verified 2026-05-09
+
+- Listed as supported assignment tool reference.
+
+- Not used for deterministic numeric savings unless added to `lib/audit/pricing.ts`.
+
+
+
+v0
+
+Source: [https://v0.dev/pricing](https://v0.dev/pricing) — verified 2026-05-09
+
+- Listed as supported assignment tool reference.
+
+- Not used for deterministic numeric savings unless added to `lib/audit/pricing.ts`.
+
+
+
+Notes
+
+- User-entered monthly spend is treated as the current spend source of truth.
+
+- Savings are capped so recommendations never produce negative or impossible savings.
+
+- Enterprise prices may vary in real contracts, so AuditAI uses conservative assumptions for MVP modeling.

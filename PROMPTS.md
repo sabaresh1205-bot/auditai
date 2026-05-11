@@ -1,107 +1,47 @@
-# Prompts (AI Summary Layer)
+# [PROMPTS.md](http://PROMPTS.md)
 
-AuditAI uses an LLM **only** to produce a short **executive summary narrative**.  
-**The LLM generates narrative only, never pricing decisions.** All savings figures, recommendation types, and tool-level actions are computed by `lib/audit/engine.ts` and `lib/audit/rules.ts` before any model is called.
+AuditAI uses an LLM only for the executive summary shown on the results page.
 
----
+The LLM does **not** calculate savings, choose recommendations, or make pricing decisions. All savings numbers and actions come from the deterministic audit engine in `lib/audit/engine.ts` and `lib/audit/rules.ts`.
 
-## Full system prompt (exact string)
 
-The following is the **complete** `SYSTEM_PROMPT` from `lib/ai/prompts.ts` (joined with newlines):
+
+## Full System Prompt
 
 ```text
+
 You are AuditAI, an expert assistant for startups.
+
 Write a concise executive audit summary.
+
 Use only the provided numbers and recommendations.
+
 Never invent or calculate savings yourself.
+
 Output plain text (no markdown), professional and actionable.
+
 Limit to ~100 words.
-```
 
----
 
-## User prompt construction (`buildUserPrompt`)
 
-The user message is built **deterministically** in `lib/ai/prompts.ts`:
+## Why I wrote it this way
 
-1. **Top recommendations:** `report.recommendations` sorted by `estimatedSavings` descending; **top 3 only**.
-2. Each line format:  
-   `{i}. {tool}: {recommendedAction} ({≈Xsavings/month or "0 savings"}). Reason: {reason}`  
-   where `reason` and `recommendedAction` already came from rules (not from the LLM).
-3. **Savings state line:**  
-   - If `monthlySavings > 0`: `Potential savings: {monthlySavings}/month ({annualSavings}/year).`  
-   - Else: `No deterministic savings found in inputs.`
-4. **Fixed closing:** `Write the summary now.`
+I wrote the prompt this way because the AI should only explain the audit result, not create new savings logic.
 
-Skeleton of the assembled user prompt:
+The prompt tells the model to use only the numbers already provided by the audit engine. This helps prevent hallucinated savings, fake recommendations, or inconsistent advice.
 
-```text
-Team size: <teamSize>
-Primary use case: <primaryUseCase>
-< savingsState line >
+I also asked for plain text and around 100 words because the summary appears inside a small results card.
 
-Top recommendations (use these only):
-< numbered lines, or "None" >
+## What I tried that did not work
 
-Write the summary now.
-```
+At first, I considered letting the AI improve or double-check the savings recommendations.
 
-No user free-text is injected except what already passed Zod validation on the API payload.
+I rejected that idea because it could change numbers or invent new savings. That would make the audit less trustworthy.
 
----
+I also avoided markdown-heavy AI output because it made the UI harder to control.
 
-## Why the prompt is designed this way
+## Fallback behavior
 
-| Design choice | Intent |
-| --- | --- |
-| **Narrow system role** | Reduces “creative” digressions; keeps output in executive-summary shape. |
-| **“Use only provided numbers”** | Forces the model to treat the audit as **read-only** context. |
-| **Plain text, ~100 words** | Fits UI card, avoids markdown rendering bugs, bounds latency/cost. |
-| **Top 3 recs only** | Shrinks context window and limits surface for hallucinated extra actions. |
-| **Savings state duplicated** | Gives the model an explicit numeric headline aligned with the UI. |
+If the AI API fails, times out, returns empty text, or no API key is configured, AuditAI uses a templated fallback summary based on the deterministic audit result.
 
----
-
-## Output handling, constraints, and hallucination mitigation
-
-After the provider returns:
-
-1. **`sanitizeSummaryText`** — strips accidental HTML/markup.
-2. **`clampWords`** — enforces a maximum word budget (~110 words in implementation).
-3. **Heuristic validation** — rejects empty/too-short summaries.
-
-If any step fails, **`fallbackSummary()`** generates narrative from the **same** deterministic recommendations—**no LLM pricing or new math**.
-
-Additional guardrails:
-
-- Provider calls use **`AbortController`** (~8s) to avoid hung requests.
-- API keys missing → **never call provider**; immediate fallback.
-
----
-
-## Prompt attempts that did *not* work (and why)
-
-| Attempt | Problem |
-| --- | --- |
-| Asking the model to “double-check” or “revise” savings | Introduces unauthorized numeric edits; violates single source of truth. |
-| Long system prompts with marketing tone | Increased verbosity and off-brand output; harder to clamp. |
-| Feeding the entire recommendation list (10+ items) | Noise + higher chance of mentioning tools not in the “selected per tool” set. |
-| Markdown-rich output | Broke simple `<p>` rendering and required heavier sanitization. |
-
----
-
-## Isolation from savings math (non-negotiable)
-
-**What the LLM never sees as an instruction to compute:**
-
-- Per-tool `estimatedSavings` beyond what is already printed in the prompt.
-- Pricing catalog rows from `lib/audit/pricing.ts`.
-- Precedence / tie-break rules from `lib/audit/engine.ts`.
-
-**What the LLM is allowed to do:**
-
-- Rephrase the provided recommendations into a coherent paragraph.
-- Prioritize themes (e.g., consolidation vs downgrade) **using only** the given list.
-
-**Single-sentence compliance statement:**  
-*LLM generates narrative only, never pricing decisions; all dollar amounts and actions originate in the deterministic engine.*
+This keeps the product usable even when the LLM is unavailable.

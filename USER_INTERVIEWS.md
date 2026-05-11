@@ -1,77 +1,107 @@
-# User Interviews (Synthesis)
+USER_[INTERVIEWS.md](http://INTERVIEWS.md)
 
-These are realistic, hypothetical early-user interview notes synthesized to reflect what AuditAI is currently built to support: deterministic recommendations, numeric savings, shareable public report links, and an optional AI executive summary.
+ Interview 1 — Karthick
 
----
+**Name:** Karthick  
 
-## Interview 1 — Founder aligning finance and engineering
+**Role:** Senior Software Engineer  
 
-**Role/Company:** 10–20 person startup, founder-led tooling decisions  
-**Pain points:**
-- “We pay for Cursor, Copilot, and at least one general LLM, but nobody has a crisp breakdown.”
-- “I need something I can forward to finance without explaining assumptions for an hour.”
+**Company:** Purple Slate, Chennai  
 
-**Quote:**  
-“I’m not looking for a clever answer. I’m looking for a deterministic memo I can send internally and defend.”
+**Company stage/context:** Software services / product engineering company  
 
-**Insights:**
-- Users want a “single artifact” that’s easy to share, not a dashboard they must interpret.
-- Confidence increases when the numeric savings logic is deterministic and not dependent on model output quality.
+Notes from the conversation
 
-**Surprising finding:**
-- The most valued part wasn’t the executive narrative—it was the prioritized list of actions with numeric savings totals.
+Karthick reviewed the AuditAI idea from the perspective of someone who works with software teams and understands developer tooling. He said the core idea was useful because many engineering teams now use multiple AI tools like ChatGPT, Copilot, Cursor, or API-based tools, but they do not always compare the monthly cost clearly.
 
-**Resulting product decisions (aligned to current implementation):**
-- Deterministic audit engine as the core.
-- Results page designed around per-tool recommendations and savings totals.
-- Shareable report URL (`/report/[id]`) so users can align internally quickly.
+Direct quotes
 
----
+- The result page should be easy to understand quickly, not only text.
+- If you show savings visually, it will be more attractive and easier to explain.
+- A bar chart or pie chart would help people immediately see where the biggest savings are.
 
-## Interview 2 — Engineering manager cleaning up overlapping subscriptions
 
-**Role/Company:** Eng manager at a small team with multiple assistants for different workflows  
-**Pain points:**
-- “We subscribed to multiple assistants because different people had preferences.”
-- “We don’t know which tool overlap is actually costing us.”
-- “Downgrading is scary; we need a reason and numeric estimate.”
 
-**Quote:**  
-“If I can’t point to a rule and a savings number, it turns into a debate instead of a decision.”
+Most surprising thing he said
 
-**Insights:**
-- Redundancy detection is compelling when it chooses a concrete action (remove/replace one tool) deterministically.
-- Tie-breaking matters: users quickly notice when “the engine picks different answers” for identical inputs.
+The most surprising point was that he focused less on the form and more on the result page. He said the audit result should look like something a manager or team lead can understand at a glance.
 
-**Surprising finding:**
-- Users preferred a conservative, honest “NO_CHANGE” output when savings weren’t clearly present.
+What it changed about my design
 
-**Resulting product decisions (aligned to current implementation):**
-- Deterministic de-dupe and precedence in `lib/audit/engine.ts`.
-- “No change recommended” behavior for optimized stacks.
-- Execution summary is best-effort; deterministic fallback ensures the UX never becomes empty.
+Based on his feedback, I added a **Savings by Tool** bar chart to the results page and public report page. The chart shows the biggest savings drivers clearly, so users can quickly understand which tools are contributing most to potential savings.
 
----
 
-## Interview 3 — API-heavy team looking for usage-spend leverage
 
-**Role/Company:** Data/engineering lead at a team with meaningful API usage  
-**Pain points:**
-- “Our spend spikes aren’t seat-related; it’s usage and prompt behavior.”
-- “We need suggestions that translate into real engineering work: caching, routing, and model tier changes.”
+Interview 2 — Ram Narayanan
 
-**Quote:**  
-“Seat optimization is a neat story, but our biggest wins are usually in prompt and routing decisions.”
+**Name:** Ram Narayanan  
 
-**Insights:**
-- Users want recommendations that map to engineering levers, not generic advice.
-- AI narrative is helpful for communication, but the actionable part is still deterministic: thresholds and estimated savings.
+**Role:** Senior Software Engineer  
 
-**Surprising finding:**
-- Even when AI summary generation might fail, users still value the deterministic recommendations enough to proceed.
+**Company:** Purple Slate, Chennai  
 
-**Resulting product decisions (aligned to current implementation):**
-- Deterministic rules for API spend detection and credit opportunity thresholds.
-- AI summary is isolated and guarded with `fallbackSummary()` and output validation.
-- Optional lead capture supports follow-up after users generate a shareable report.
+**Company stage/context:** Software services / product engineering company  
 
+
+
+Notes from the conversation
+
+Ram reviewed the AuditAI idea mainly from the perspective of distribution and usability. He said the main audit flow looked useful, but the part he liked most was the embeddable widget because it could help the product reach users outside the main website.
+
+
+
+Direct quotes
+
+- The main audit flow is good, but the embed idea is the most useful for reach.
+- If this can be placed inside a blog or article, more people may try it without visiting the main site first.
+- The widget should stay simple; it should not ask for login or email inside the embed.
+
+
+
+Most surprising thing he said
+
+The most surprising point was that he focused more on distribution than the audit form itself. He felt the embeddable widget could act like a small calculator that brings users into the full AuditAI product.
+
+
+
+What it changed about my design
+
+Based on his feedback, I kept the embeddable widget lightweight. It runs deterministic calculations locally, avoids lead capture inside the embed, and sends users to the full AuditAI app when they want the complete report.
+
+
+
+Interview 3 — Vijayamarnath
+
+**Name:** Vijayamarnath  
+
+**Role:** Senior Software Engineer  
+
+**Company:** Purple Slate, Chennai  
+
+**Company stage/context:** Software services / product engineering company  
+
+
+
+Notes from the conversation
+
+Vijayamarnath reviewed the AuditAI flow and said the product felt useful because it gives a clear report instead of only showing raw form inputs. He was especially positive about the shareable result because it could be shown to a team without explaining everything manually.
+
+
+
+Direct quotes
+
+- This is good because the result is easy to understand.
+- I would use this and show it to my team.
+- The report should be shareable because team members can discuss the savings together.
+
+
+
+Most surprising thing he said
+
+The most surprising point was that he immediately thought about sharing the report with his team. That showed the public report URL is not just a technical feature, but an important product feature for team discussion.
+
+
+
+What it changed about my design
+
+His feedback confirmed that the public report page and shareable URL should stay simple and readable. I kept the report focused on savings, recommendations, charts, and explanations so that a team can review it quickly without needing login or extra setup.

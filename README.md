@@ -2,27 +2,25 @@
 
 AuditAI is a no-login AI spend audit tool for startup teams, founders, and engineering leads. It helps users enter their AI tools, plans, seats, and monthly spend, then generates deterministic recommendations for reducing overspending. The app also creates shareable reports with AI summaries, lead capture, email confirmation, PDF export, and benchmark insights. 
 
-
-
 Live URL : [https://auditai-credex.vercel.app/](https://auditai-credex.vercel.app/)
 
 ---
 
-## Screenshots 
+## Screenshots
 
 Landing Page  
-1. (screenshots/landing.png)  
 
+1. (screenshots/landing.png)
 
 Audit Form  
 2. (screenshots/audit-form.png)  
-  
+
 Results Dashboard  
 3. (screenshots/results.png)  
-  
+
 Public Report  
 4. (screenshots/public-report.png)  
-  
+
 Embeddable Widget  
 5. (screenshots/embed-widget.png)
 
