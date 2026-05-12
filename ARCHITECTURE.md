@@ -12,7 +12,7 @@ flowchart TB
     A[Landing /audit]
     F[AuditForm]
     E["generateAuditReport()"]
-    R[/results]
+    R["/results"]
     C[AuditReportContext sessionStorage]
   end
 
