@@ -1,5 +1,3 @@
-# [ECONOMICS.md](http://ECONOMICS.md)
-
 ## 1. What is a converted lead worth to Credex?
 
 A converted lead means a startup completes the audit, books a Credex consultation, and buys discounted AI credits.
@@ -7,16 +5,12 @@ A converted lead means a startup completes the audit, books a Credex consultatio
 Assumption:
 
 - Average qualified startup AI spend: **$1,000/month**
-
 - Annual AI spend: **$12,000**
-
 - Credex margin assumption: **10%**
 
 Math:
 
 $12,000 × 10% = $1,200/year
-
-
 
 ## 2. What is CAC at each channel from the GTM plan?
 
@@ -47,12 +41,13 @@ Example funnel:
 
 That means:
 
--   
+- 
+
 Audit completed → consultation booked: **5%**  
 
--   
-Consultation booked → credit purchase: **20%**  
+- 
 
+Consultation booked → credit purchase: **20%**  
 
 If one converted customer is worth around **$1,200/year**, then 100 completed audits can create around **$1,200/year** in value.
 
@@ -83,14 +78,9 @@ So AuditAI must attract higher-spend teams, especially teams saving more than **
 Credex should measure:
 
 - audit completion rate  
-
 - email capture rate  
-
 - consultation click rate  
-
 - consultation-to-purchase rate  
-
-- average annual margin per converted customer  
-
+- average annual margin per converted customer
 
 These numbers show whether AuditAI is only a useful free tool or a real revenue channel for Credex.

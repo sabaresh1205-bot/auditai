@@ -1,10 +1,6 @@
-# [PROMPTS.md](http://PROMPTS.md)
-
 AuditAI uses an LLM only for the executive summary shown on the results page.
 
 The LLM does **not** calculate savings, choose recommendations, or make pricing decisions. All savings numbers and actions come from the deterministic audit engine in `lib/audit/engine.ts` and `lib/audit/rules.ts`.
-
-
 
 ## Full System Prompt
 
@@ -45,3 +41,5 @@ I also avoided markdown-heavy AI output because it made the UI harder to control
 If the AI API fails, times out, returns empty text, or no API key is configured, AuditAI uses a templated fallback summary based on the deterministic audit result.
 
 This keeps the product usable even when the LLM is unavailable.
+```
+

@@ -18,6 +18,8 @@ The main blocker was understanding the full scope because the assignment has bot
 
 Build the audit input form and start defining the deterministic audit engine.
 
+
+
 Day 2 — 2026-05-08
 
 **Hours worked:** 6
@@ -37,6 +39,8 @@ I forgot to check the git distinct-days requirement earlier using `git log --pre
 **Plan for tomorrow:**  
 
 Finish deterministic audit rules and add automated tests for the audit engine.
+
+
 
 Day 3 — 2026-05-09
 
@@ -58,6 +62,8 @@ Some test expectations needed adjustment because more than one rule could affect
 
 Build the results page and make the audit output easy to understand visually.
 
+
+
 Day 4 — 2026-05-10
 
 **Hours worked:** 6
@@ -78,6 +84,8 @@ I had to prevent duplicate report saves when the results page refreshed or re-re
 
 Add lead capture, transactional email, Open Graph metadata, and production-ready sharing behavior.
 
+
+
 Day 5 — 2026-05-11
 
 **Hours worked:** 7
@@ -97,6 +105,8 @@ Lead capture worked locally but initially failed in production because of Supaba
 **Plan for tomorrow:**  
 
 Complete final UI polish, update documentation, add screenshots, verify deployment, and submit the project.
+
+
 
 Day 6 — 2026-05-12
 

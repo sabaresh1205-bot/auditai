@@ -1,6 +1,6 @@
-#[METRICS.md](http://METRICS.md)
 
- 1. What is the North Star metric?
+
+1. What is the North Star metric?
 
 The North Star metric is:
 
@@ -10,17 +10,12 @@ This is better than DAU because AuditAI is not a daily-use app. A user may only 
 
 A completed audit with a shareable report means the user reached the value moment: they entered their stack, received recommendations, and created something they can send to a founder, finance person, or engineering lead.
 
-
-
-2. What are the 3 input metrics?
-
- 1. Audit completion rate
+1. What are the 3 input metrics?
+  1. Audit completion rate
 
 This measures how many users who start the audit actually finish it.
 
 Audit completion rate = completed audits / audit starts
-
-
 
 ### 2. Email capture rate
 
@@ -29,8 +24,6 @@ This measures how many users submit their email after seeing the report.
 ```
 Email capture rate = emails captured / completed audits
 ```
-
-
 
 ### 3. Consultation click rate
 
@@ -49,17 +42,11 @@ This is important because Credex cares about qualified leads, not just traffic.
 I would instrument:
 
 - audit started  
-
 - audit completed  
-
 - report saved  
-
 - email submitted  
-
 - consultation CTA clicked  
-
 - public report viewed  
-
 - PDF exported
 
 ---

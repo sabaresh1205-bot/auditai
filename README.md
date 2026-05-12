@@ -8,21 +8,11 @@ Live URL : [https://auditai-credex.vercel.app/](https://auditai-credex.vercel.ap
 
 ## Screenshots
 
-Landing Page  
-
-1. (screenshots/landing.png)
-
-Audit Form  
-2. (screenshots/audit-form.png)  
-
-Results Dashboard  
-3. (screenshots/results.png)  
-
-Public Report  
-4. (screenshots/public-report.png)  
-
-Embeddable Widget  
-5. (screenshots/embed-widget.png)
+1. Landing Page — `screenshots/landing.png`
+2. Audit Form — `screenshots/audit-form.png`
+3. Results Dashboard — `screenshots/results.png`
+4. Public Report — `screenshots/public-report.png`
+5. Embeddable Widget — `screenshots/embed-widget.png`
 
 ---
 
@@ -35,7 +25,7 @@ Embeddable Widget
 - AI-generated executive summary with fallback
 - Supabase report storage and lead capture
 - Resend transactional confirmation email
-- Shareable public report URLs with Open Graph metadata
+- Shareable public report URLs with Open Graph metadata and preview image
 - Credex consultation CTA for high-savings audits
 - Honest low-savings state with future optimization signup
 - PDF export

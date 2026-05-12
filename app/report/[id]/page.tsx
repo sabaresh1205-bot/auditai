@@ -9,6 +9,7 @@ import { SavingsBreakdown } from "@/components/results/SavingsBreakdown";
 import { SavingsByToolChart } from "@/components/results/SavingsByToolChart";
 import { BenchmarkCard } from "@/components/results/BenchmarkCard";
 import { formatMoneyDeterministic } from "@/lib/report/format";
+import { AUDITAI_OG_IMAGE } from "@/lib/seo/ogImage";
 import { getPublicReportPageUrl } from "@/lib/seo/publicSiteUrl";
 
 type Params = { id: string };
@@ -50,12 +51,14 @@ export async function generateMetadata({
         description,
         type: "article",
         siteName: "AuditAI",
+        images: [AUDITAI_OG_IMAGE],
         ...(canonicalUrl ? { url: canonicalUrl } : {}),
       },
       twitter: {
         card: "summary_large_image",
         title,
         description,
+        images: [AUDITAI_OG_IMAGE.url],
       },
     };
   } catch {

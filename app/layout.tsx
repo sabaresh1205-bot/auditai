@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { AUDITAI_OG_IMAGE } from "@/lib/seo/ogImage";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,12 +30,14 @@ export const metadata: Metadata = {
     description:
       "AuditAI gives deterministic recommendations to cut AI tool waste for startups.",
     type: "website",
+    images: [AUDITAI_OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: "AuditAI — Audit & optimize AI tool spend",
     description:
       "Rule-based audits that find concrete savings in your AI stack.",
+    images: [AUDITAI_OG_IMAGE.url],
   },
 };
 
